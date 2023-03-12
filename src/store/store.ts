@@ -10,12 +10,14 @@ export type storeState = {
   isAnimating: boolean;
   apiKey: string;
   siteName: string;
+  darkMode: string;
 };
 
 const getDefaultInitialState: storeState = () => ({
   isAnimating: false,
   apiKey: "",
   siteName: "Husks",
+  darkMode: "dark",
 });
 const zustandContext: any = createContext();
 export const Provider = zustandContext.Provider;

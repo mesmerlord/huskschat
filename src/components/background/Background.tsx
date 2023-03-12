@@ -5,8 +5,16 @@ import { useStore } from "../../store/store";
 
 const Background = (props) => {
   const apiKey = useStore((state) => state.apiKey);
+  const darkMode = useStore((state) => state.darkMode);
+
   return (
-    <MantineProvider withGlobalStyles withNormalizeCSS>
+    <MantineProvider
+      withGlobalStyles
+      withNormalizeCSS
+      theme={{
+        colorScheme: darkMode ?? "dark",
+      }}
+    >
       <Notifications />
       <Paper
         radius={0}

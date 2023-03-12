@@ -89,10 +89,8 @@ const Layout = ({ component, children }: LayoutProps) => {
             },
           })}
         >
-          {/* Your application here */}
+          {children}
         </AppShell>
-
-        {children}
       </Background>
     </>
   );
