@@ -29,8 +29,7 @@ interface LayoutProps {
 const Layout = ({ component, children }: LayoutProps) => {
   const description =
     "Revamp your ChatGPT conversations with seamless UI experience.";
-  const tagLine =
-    "Revamp your ChatGPT conversations with seamless UI experience.";
+  const tagLine = "Husks: Own your conversations with ChatGPT";
   const router = useRouter();
   //   const analytics = useAnalytics({ pathname: router.pathname });
 

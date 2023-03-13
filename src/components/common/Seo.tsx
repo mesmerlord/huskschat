@@ -26,6 +26,7 @@ const Seo = ({ description, title, url, image }: SeoProps) => {
         <meta name="twitter:card" content={`${image}`} />
         <meta name="twitter:label1" content="Est reading time" />
         <meta name="twitter:data1" content="10 minutes" />
+        <meta name="twitter:image" content={`${image}`} />
         <link rel="canonical" href={`${url}`} />
       </Head>
     </>
