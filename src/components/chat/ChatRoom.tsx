@@ -21,7 +21,7 @@ import {
   useStore,
 } from "@/store/store";
 import ChangeApiModal from "../common/ChangeApiModal";
-
+import { showNotification } from "@mantine/notifications";
 interface ChatRoomProps {
   roomId: string;
 }
@@ -31,7 +31,6 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
   const { scrollIntoView, targetRef } = useScrollIntoView<HTMLDivElement>({
     offset: 60,
   });
-
   const [message, setMessage] = useState("");
 
   const [openAiLoading, setOpenAiLoading] = useState(false);
@@ -117,8 +116,23 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
         const titleCompletion = await getOpenAiCompletion(
           [systemPrompt, userPrompt, newTitlePrompt],
           apiKey
-        );
-        setOpenAiLoading(false);
+        )
+          .then((res) => {
+            setOpenAiLoading(false);
+            return res;
+          })
+          .catch((err) => {
+            setOpenAiLoading(false);
+            showNotification({
+              title: "Error",
+              message:
+                "Error communicating with OpenAI, please try again later",
+              color: "red",
+              icon: <ActionIcon color="red" />,
+            });
+            return null;
+          });
+
         const newTitleMessage = titleCompletion?.data?.choices[0]?.message;
         if (
           titleCompletion &&

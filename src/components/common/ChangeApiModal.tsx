@@ -9,12 +9,31 @@ import {
   Title,
 } from "@mantine/core";
 import { useState } from "react";
+import { Configuration, OpenAIApi } from "openai";
 
 const ChangeApiModal = ({ opened, setOpened }) => {
   const setApiKey = useStore((state) => state.setApiKey);
   const apiKey = useStore((state) => state.apiKey);
 
   const [newApiKey, setNewApiKey] = useState(apiKey);
+  const [error, setError] = useState("");
+
+  const checkApiKey = async () => {
+    const configuration = new Configuration({
+      apiKey: newApiKey,
+    });
+    const openai = new OpenAIApi(configuration);
+    const completion = await openai
+      .retrieveModel("text-davinci-003")
+      .then((data) => {
+        setApiKey(newApiKey);
+        setOpened(false);
+        setError("");
+      })
+      .catch((err) => {
+        setError("Invalid API Key");
+      });
+  };
   return (
     <Modal opened={opened} onClose={() => setOpened(false)} centered>
       <Title
@@ -49,14 +68,9 @@ const ChangeApiModal = ({ opened, setOpened }) => {
           <PasswordInput
             value={newApiKey}
             onChange={(e) => setNewApiKey(e.currentTarget.value)}
+            error={error}
           />
-          <Button
-            onClick={() => {
-              setApiKey(newApiKey);
-              setOpened(false);
-            }}
-            disabled={newApiKey === ""}
-          >
+          <Button onClick={checkApiKey} disabled={newApiKey === ""}>
             Set API Key
           </Button>
         </Group>
