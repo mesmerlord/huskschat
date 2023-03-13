@@ -86,14 +86,13 @@ export const getOpenAiCompletion = async (
   });
 
   const configuration = new Configuration({
-    apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
+    apiKey: apiKey,
   });
   const openai = new OpenAIApi(configuration);
   const completion = await openai.createChatCompletion({
     model: "gpt-3.5-turbo-0301",
     messages: newMessages,
   });
-  console.log("completion", completion);
   return completion;
 };
 
