@@ -82,11 +82,27 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
 
       addRoomMessage(newRoomId, userPrompt, 0, systemPrompt);
       setMessage("");
+      setOpenAiLoading(true);
 
       const completion = await getOpenAiCompletion(
         [systemPrompt, userPrompt],
         apiKey
-      );
+      )
+        .then((res) => {
+          setOpenAiLoading(false);
+          return res;
+        })
+        .catch((err) => {
+          setOpenAiLoading(false);
+          showNotification({
+            title: "Error",
+            message: "Error communicating with OpenAI, please try again later",
+            color: "red",
+            icon: <ActionIcon color="red" />,
+          });
+          return null;
+        });
+
       const newMessage = completion?.data?.choices[0]?.message;
       if (completion && completion.data.choices.length > 0 && newMessage) {
         const assistantPrompt = {
@@ -112,7 +128,6 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
           content:
             "Answer with a upto 3 word title for this chat, only the title.",
         };
-        setOpenAiLoading(true);
         const titleCompletion = await getOpenAiCompletion(
           [systemPrompt, userPrompt, newTitlePrompt],
           apiKey
