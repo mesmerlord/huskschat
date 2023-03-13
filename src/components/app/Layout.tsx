@@ -28,9 +28,9 @@ interface LayoutProps {
 
 const Layout = ({ component, children }: LayoutProps) => {
   const description =
-    "Husks is a free interface to interact with OpenAI's ChatGPT API.";
+    "Revamp your ChatGPT conversations with seamless UI experience.";
   const tagLine =
-    "Husks is a free interface to interact with OpenAI's ChatGPT API.";
+    "Revamp your ChatGPT conversations with seamless UI experience.";
   const router = useRouter();
   //   const analytics = useAnalytics({ pathname: router.pathname });
 
@@ -75,7 +75,7 @@ const Layout = ({ component, children }: LayoutProps) => {
         description={description}
         url={`https://husks.org`}
         title={tagLine}
-        image={""}
+        image={"/OgImage.png"}
       />
 
       <Background>
