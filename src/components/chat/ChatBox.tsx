@@ -2,17 +2,13 @@ import {
   ActionIcon,
   Box,
   Button,
-  Center,
   Col,
   Container,
   Flex,
   Grid,
-  Group,
   Textarea,
-  TextInput,
 } from "@mantine/core";
 import { IconSend } from "@tabler/icons-react";
-import { useState } from "react";
 
 interface ChatBoxProps {
   onMessageSubmit: () => void;
@@ -22,7 +18,12 @@ interface ChatBoxProps {
 
 const ChatBox = ({ onMessageSubmit, message, setMessage }: ChatBoxProps) => {
   return (
-    <form>
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        onMessageSubmit();
+      }}
+    >
       <Container>
         <Box sx={{ width: "100%", marginLeft: "auto", marginRight: "auto" }}>
           <Grid grow>
@@ -40,7 +41,7 @@ const ChatBox = ({ onMessageSubmit, message, setMessage }: ChatBoxProps) => {
             <Col span={1}>
               <Flex justify="center" align="flex-end" sx={{ height: "100%" }}>
                 <Button
-                  onClick={onMessageSubmit}
+                  type="submit"
                   leftIcon={
                     <ActionIcon variant="transparent" size="sm">
                       <IconSend color="white" />

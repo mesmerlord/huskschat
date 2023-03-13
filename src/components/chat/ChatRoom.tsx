@@ -43,13 +43,18 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
   const apiKey = useStore((state) => state.apiKey);
 
   const [room, setRoom] = useState<ChatRoomType>(
-    messageRoomList?.find((storeRoom) => storeRoom.id === roomId) || []
+    messageRoomList?.find((storeRoom) => storeRoom.id === roomId) || {
+      messages: [],
+    }
   );
 
   useEffect(() => {
     setRoom(
-      messageRoomList?.find((storeRoom) => storeRoom.id === roomId) || []
+      messageRoomList?.find((storeRoom) => storeRoom.id === roomId) || {
+        messages: [],
+      }
     );
+    console.log(room, "room");
     dummy.current?.scrollIntoView({ behavior: "smooth" });
   }, [roomId, messageRoomList]);
 
@@ -76,7 +81,7 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
           "You are an AI model trained by OpenAI, be as concise as possible in your responses.",
       };
 
-      addRoomMessage(newRoomId, userPrompt, systemPrompt);
+      addRoomMessage(newRoomId, userPrompt, 0, systemPrompt);
       setMessage("");
 
       const completion = await getOpenAiCompletion(
@@ -92,7 +97,7 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
         };
         setRoom({
           id: newRoomId,
-          messages: [userPrompt, systemPrompt, assistantPrompt],
+          messages: [systemPrompt, userPrompt, assistantPrompt],
           name: userPrompt.content,
           createdAt: new Date(),
           tokensUsed: completion?.data?.usage?.total_tokens ?? 0,
@@ -128,7 +133,6 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
       addRoomMessage(roomId, userPrompt);
 
       setOpenAiLoading(true);
-
       const completion = await getOpenAiCompletion(
         [...room.messages, userPrompt],
         apiKey

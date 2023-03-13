@@ -39,7 +39,6 @@ export const IDBStorage = {
 
     const value = await get(name);
 
-    console.log("load indexeddb called");
     return value || null;
   },
   setItem: async (name, value) => {
@@ -47,7 +46,6 @@ export const IDBStorage = {
     if (typeof indexedDB === "undefined") {
       return;
     }
-    console.log("set indexeddb called");
 
     await set(name, value);
   },
@@ -79,10 +77,12 @@ export const getOpenAiCompletion = async (
   apiKey
 ) => {
   const newMessages = messages?.map((msg) => {
-    return {
-      content: msg.content,
-      role: msg.role,
-    };
+    if (Boolean(msg?.content)) {
+      return {
+        content: msg.content,
+        role: msg.role,
+      };
+    }
   });
 
   const configuration = new Configuration({
@@ -148,13 +148,16 @@ export const initializeStore = (preloadedState = {}) => {
             (room) => room.id === roomId
           );
           if (!existingRoom) {
+            const messagesToAdd =
+              systemPrompt === null ? [message] : [systemPrompt, message];
+
             set((state) => ({
               messageRoomList: [
                 ...state.messageRoomList,
                 {
                   id: roomId,
                   name: roomId,
-                  messages: [systemPrompt, message],
+                  messages: [...messagesToAdd],
                   tokensUsed: 0,
                 },
               ],
@@ -166,6 +169,7 @@ export const initializeStore = (preloadedState = {}) => {
                 const room = draft.messageRoomList.find(
                   (room) => room.id === roomId
                 );
+
                 room.tokensUsed += tokensUsed;
                 room.messages.push(message);
               })

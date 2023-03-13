@@ -1,16 +1,12 @@
 import {
   ActionIcon,
-  Alert,
   Avatar,
   Card,
-  Collapse,
   Container,
   Group,
-  Loader,
-  Menu,
   Stack,
   Text,
-  useMantineColorScheme,
+  Title,
 } from "@mantine/core";
 import dayjs from "dayjs";
 import calendar from "dayjs/plugin/calendar";
@@ -19,6 +15,8 @@ import { ChatCompletionRequestMessageRoleEnum } from "./ChatRoom";
 import Link from "next/link";
 import { Prism } from "@mantine/prism";
 import { useStore } from "@/store/store";
+import ReactMarkdown from "react-markdown";
+import { IconRobot } from "@tabler/icons-react";
 interface ChatMessageProps {
   id: string;
   content: string;
@@ -55,7 +53,7 @@ const ChatMessage = ({ id, content, role }: ChatMessageProps) => {
               darkMode === "light" && role === "assistant" ? "black" : "white",
           })}
         >
-          {chunk}
+          <ReactMarkdown>{chunk}</ReactMarkdown>
         </Text>
       );
     }
@@ -77,24 +75,27 @@ const ChatMessage = ({ id, content, role }: ChatMessageProps) => {
         })}
         shadow="sm"
       >
-        <Group align="flex-end" noWrap sx={{}}>
+        <Group align="flex-start" noWrap>
+          <Stack spacing={2}>
+            <Avatar>{role === "assistant" && <IconRobot />}</Avatar>
+            {role === "assistant" && (
+              <Title
+                align="center"
+                order={6}
+                sx={(theme) => ({
+                  color: darkMode === "light" ? "black" : "white",
+                })}
+              >
+                AI
+              </Title>
+            )}
+            {role === "user" && (
+              <Title align="center" order={6} color="white">
+                YOU
+              </Title>
+            )}
+          </Stack>
           <Stack p={0} spacing={2} sx={{ maxWidth: "80%" }} align="flex-end">
-            <Group align="flex-end" spacing="xs">
-              <Stack p={0} spacing={0} m={0}>
-                <Stack
-                  p={0}
-                  spacing={0}
-                  m={0}
-                  // hidden={
-                  //   deleted === undefined
-                  //     ? repliedTo === undefined
-                  //       ? true
-                  //       : false
-                  //     : true
-                  // }
-                ></Stack>
-              </Stack>
-            </Group>
             <Container>{textChunks}</Container>
           </Stack>
         </Group>
