@@ -3,6 +3,7 @@ import {
   Alert,
   Avatar,
   Collapse,
+  Container,
   Group,
   Loader,
   Menu,
@@ -11,11 +12,10 @@ import {
 } from "@mantine/core";
 import dayjs from "dayjs";
 import calendar from "dayjs/plugin/calendar";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ChatCompletionRequestMessageRoleEnum } from "./ChatRoom";
 import Link from "next/link";
-import { IconCornerUpLeft } from "@tabler/icons-react";
-
+import { Prism } from "@mantine/prism";
 interface ChatMessageProps {
   id: string;
   content: string;
@@ -34,19 +34,23 @@ const ChatMessage = ({ id, content, role }: ChatMessageProps) => {
         return "center";
     }
   };
-  let color;
   dayjs.extend(calendar);
   const [hovered, setHovered] = useState(false);
 
+  const codeRegex = /```(?:.*)\n([\s\S]*?)\n```/;
+  const codeChunks = content.split(codeRegex);
+
+  const textChunks = codeChunks.map((chunk, index) => {
+    if (index % 2 === 1) {
+      return <Prism key={index}>{chunk}</Prism>;
+    } else {
+      return <Text key={index}>{chunk}</Text>;
+    }
+  });
+
   return (
     <>
-      <Group
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
-        position={messagePosition()}
-        align="flex-end"
-        noWrap
-      >
+      <Group position={messagePosition()} align="flex-end" noWrap>
         <Stack p={0} spacing={2} sx={{ maxWidth: "80%" }} align="flex-end">
           <Group position={messagePosition()} align="flex-end" spacing="xs">
             <Stack p={0} spacing={0} m={0}>
@@ -64,13 +68,11 @@ const ChatMessage = ({ id, content, role }: ChatMessageProps) => {
               ></Stack>
             </Stack>
           </Group>
-          <Text size="xs" align={messagePosition()} color="dimmed">
-            {content}
-          </Text>
+          <Container>{textChunks}</Container>
         </Stack>
       </Group>
     </>
   );
 };
 
-export default ChatMessage;
+export default React.memo(ChatMessage);

@@ -7,79 +7,63 @@ import {
   Stack,
 } from "@mantine/core";
 import { useScrollIntoView } from "@mantine/hooks";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import ChatBox from "./ChatBox";
-import { Configuration, OpenAIApi } from "openai";
 import ChatMessage from "./ChatMessage";
+import { ChatMessageType, useStore } from "@/store/store";
 
-export declare const ChatCompletionRequestMessageRoleEnum: {
-  readonly System: "system";
-  readonly User: "user";
-  readonly Assistant: "assistant";
-};
+interface ChatRoomProps {
+  roomId: string;
+}
 
-type ChatMessageType = {
-  id: string;
-  content: string;
-  role: typeof ChatCompletionRequestMessageRoleEnum[keyof typeof ChatCompletionRequestMessageRoleEnum];
-};
-
-const ChatRoom = () => {
+const ChatRoom = ({ roomId }: ChatRoomProps) => {
   const dummy = useRef<HTMLDivElement>(null);
   const { scrollIntoView, targetRef } = useScrollIntoView<HTMLDivElement>({
     offset: 60,
   });
 
   const [message, setMessage] = useState("");
-  const [messageList, setMessageList] = useState<ChatMessageType[]>([
-    {
-      id: "1",
-      role: "system",
-      content:
-        "You are a AI model from OpenAI, answer as concisely as possible to the user's questions.",
-    },
-  ]);
 
-  const messageCompletion = async () => {
-    const configuration = new Configuration({
-      apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
-    });
-    const openai = new OpenAIApi(configuration);
-    const messages = messageList.map((msg) => {
-      return {
-        content: msg.content,
-        role: msg.role,
-      };
-    });
+  const messageRoomList = useStore((state) => state.messageRoomList);
+  const addRoomMessage = useStore((state) => state.addRoomMessage);
+  const addRoom = useStore((state) => state.addRoom);
+  const setCurrentRoomId = useStore((state) => state.setCurrentRoomId);
 
-    const completion = await openai.createChatCompletion({
-      model: "gpt-3.5-turbo-0301",
-      messages: messages,
-    });
-    const message = completion?.data?.choices[0]?.message;
-    if (message) {
-      setMessageList((value) => [
-        ...value,
-        { id: completion?.data?.id, ...message },
-      ]);
-    }
-    setMessage("");
-  };
-
-  useEffect(() => {
-    if (
-      messageList.length > 1 &&
-      messageList[messageList.length - 1].role === "user"
-    ) {
-      messageCompletion();
-    }
-  }, [messageList]);
+  const room = useMemo(
+    () => messageRoomList.find((storeRoom) => storeRoom.id === roomId),
+    [messageRoomList, roomId]
+  );
 
   const onMessageSubmit = () => {
-    setMessageList((value) => [
-      ...value,
-      { id: "2", role: "user", content: message },
-    ]);
+    if (!room) {
+      const newRoomId = crypto.randomUUID();
+      const newRoom = {
+        id: newRoomId,
+        messages: [
+          {
+            id: crypto.randomUUID(),
+            role: "system",
+            content:
+              "You are an AI model trained by OpenAI, be as concise as possible in your responses.",
+          },
+          {
+            id: crypto.randomUUID(),
+            role: "user",
+            content: message,
+          },
+        ],
+      };
+      addRoom(newRoom);
+      setCurrentRoomId(newRoomId);
+    } else {
+      addRoomMessage(roomId, {
+        id: crypto.randomUUID(),
+        role: "user",
+        content: message,
+      });
+    }
+
+    setMessage("");
   };
 
   return (
@@ -99,15 +83,24 @@ const ChatRoom = () => {
               </Paper>
             </Group>
 
-            {messageList.map((msg, id) => {
-              return (
-                <ChatMessage
-                  id={msg.id}
-                  content={msg.content}
-                  role={msg.role}
-                />
-              );
-            })}
+            {!room && (
+              <ChatMessage
+                content="Welcome to the chat room"
+                role="system"
+                id="system-message"
+              />
+            )}
+            {messageRoomList
+              .find((storeRoom) => storeRoom.id === roomId)
+              ?.messages.map((msg, id) => {
+                return (
+                  <ChatMessage
+                    id={msg.id}
+                    content={msg.content}
+                    role={msg.role}
+                  />
+                );
+              })}
           </Stack>
           <div ref={targetRef}></div>
           <div ref={dummy}></div>

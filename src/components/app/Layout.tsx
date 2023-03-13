@@ -4,6 +4,7 @@ import Background from "../background/Background";
 import ProgressLoading from "../../components/background/ProgressLoading";
 import Seo from "../common/Seo";
 import { AppShell, Navbar, Header } from "@mantine/core";
+import PreviousChats from "../chat/PreviousChats";
 
 interface LayoutProps {
   component: any;
@@ -72,7 +73,7 @@ const Layout = ({ component, children }: LayoutProps) => {
           padding="md"
           navbar={
             <Navbar width={{ base: 300 }} height={500} p="xs">
-              {/* Navbar content */}
+              <PreviousChats />
             </Navbar>
           }
           header={

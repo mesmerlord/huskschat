@@ -1,8 +1,11 @@
 import {
   ActionIcon,
   Box,
+  Button,
+  Col,
   Container,
   Flex,
+  Grid,
   Group,
   Textarea,
   TextInput,
@@ -19,26 +22,33 @@ interface ChatBoxProps {
 const ChatBox = ({ onMessageSubmit, message, setMessage }: ChatBoxProps) => {
   return (
     <form>
-      <Group grow>
-        <Textarea
-          sx={{ width: "100%" }}
-          minRows={2}
-          autosize
-          placeholder="Type your message"
-          value={message}
-          onChange={(event) => setMessage(event.currentTarget.value)}
-          rightSection={
-            <ActionIcon
+      <Grid grow>
+        <Col span={10}>
+          <Textarea
+            sx={{ width: "99%" }}
+            minRows={2}
+            maxRows={10}
+            autosize
+            placeholder="Type your message"
+            value={message}
+            onChange={(event) => setMessage(event.currentTarget.value)}
+          />
+        </Col>
+        <Col span={1}>
+          <Flex justify="center" align="flex-end" sx={{ height: "100%" }}>
+            <Button
               onClick={onMessageSubmit}
-              variant="transparent"
-              color="gray"
-              size="sm"
+              leftIcon={
+                <ActionIcon variant="transparent" color="gray" size="sm">
+                  <IconSend />
+                </ActionIcon>
+              }
             >
-              <IconSend />
-            </ActionIcon>
-          }
-        />
-      </Group>
+              Send
+            </Button>
+          </Flex>
+        </Col>
+      </Grid>
     </form>
   );
 };
