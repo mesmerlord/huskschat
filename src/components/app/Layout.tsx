@@ -3,8 +3,23 @@ import { useEffect, useState } from "react";
 import Background from "../background/Background";
 import ProgressLoading from "../../components/background/ProgressLoading";
 import Seo from "../common/Seo";
-import { AppShell, Navbar, Header } from "@mantine/core";
+import {
+  AppShell,
+  Navbar,
+  Header,
+  Stack,
+  Title,
+  Box,
+  Group,
+  Grid,
+  Col,
+  Center,
+} from "@mantine/core";
 import PreviousChats from "../chat/PreviousChats";
+import NewChatButton from "../chat/NewChatButton";
+import DarkModeSwitch from "../common/DarkModeSwitch";
+import ChangeApiButton from "../common/ChangeApiButton";
+import TokenUsed from "../common/TokenUsed";
 
 interface LayoutProps {
   component: any;
@@ -72,13 +87,35 @@ const Layout = ({ component, children }: LayoutProps) => {
         <AppShell
           padding="md"
           navbar={
-            <Navbar width={{ base: 300 }} height={500} p="xs">
-              <PreviousChats />
+            <Navbar width={{ base: 300 }} height={750} p="xs">
+              <Navbar.Section>
+                <NewChatButton />
+              </Navbar.Section>
+              <Navbar.Section mt="md" grow>
+                <Box sx={{ height: "300px" }}>
+                  <PreviousChats />
+                </Box>
+              </Navbar.Section>
+              <Navbar.Section>
+                <Stack>
+                  <ChangeApiButton />
+                  <DarkModeSwitch />
+                </Stack>
+              </Navbar.Section>
             </Navbar>
           }
           header={
             <Header height={60} p="xs">
-              {/* Header content */}
+              <Grid>
+                <Col span={4}>
+                  <Title order={3}>🌽Husk Chat</Title>
+                </Col>
+                <Col span={6}>
+                  <Center>
+                    <TokenUsed />
+                  </Center>
+                </Col>
+              </Grid>
             </Header>
           }
           styles={(theme) => ({

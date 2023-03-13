@@ -10,15 +10,15 @@ import produce from "immer";
 
 let store;
 
-export declare const ChatCompletionRequestMessageRoleEnum: {
-  readonly System: "system";
-  readonly User: "user";
-  readonly Assistant: "assistant";
-};
+export enum ChatCompletionRequestMessageRoleEnum {
+  USER = "user",
+  ASSISTANT = "assistant",
+  SYSTEM = "system",
+}
 
 export type ChatMessageType = {
   id: string;
-  content: string;
+  content: string | null;
   role: typeof ChatCompletionRequestMessageRoleEnum[keyof typeof ChatCompletionRequestMessageRoleEnum];
 };
 
@@ -26,6 +26,8 @@ export type ChatRoomType = {
   id: string;
   name: string;
   messages: ChatMessageType[];
+  createdAt: Date;
+  tokensUsed: number;
 };
 
 export const IDBStorage = {
@@ -72,6 +74,29 @@ const zustandContext: any = createContext();
 export const Provider = zustandContext.Provider;
 export const useStore = zustandContext.useStore;
 
+export const getOpenAiCompletion = async (
+  messages: ChatMessageType[],
+  apiKey
+) => {
+  const newMessages = messages?.map((msg) => {
+    return {
+      content: msg.content,
+      role: msg.role,
+    };
+  });
+
+  const configuration = new Configuration({
+    apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
+  });
+  const openai = new OpenAIApi(configuration);
+  const completion = await openai.createChatCompletion({
+    model: "gpt-3.5-turbo-0301",
+    messages: newMessages,
+  });
+  console.log("completion", completion);
+  return completion;
+};
+
 export const initializeStore = (preloadedState = {}) => {
   return create(
     persist(
@@ -80,60 +105,83 @@ export const initializeStore = (preloadedState = {}) => {
         ...preloadedState,
         setIsAnimating: (isAnimating) => set(() => ({ isAnimating })),
         setApiKey: (apiKey) => set(() => ({ apiKey })),
-        addRoomMessage: async (roomId, message) => {
-          const messageRoomList = get().messageRoomList;
-          console.log("messageRoomList", messageRoomList);
-          const room = messageRoomList?.find((room) => room.id === roomId);
-          if (room) {
-            room.messages.push(message);
-            set(() => ({ messageRoomList }));
-          }
+        setCurrentRoomId: (roomId) => set(() => ({ currentRoomId: roomId })),
+        setRoomName: (roomId, name) => {
+          set(
+            produce((draft) => {
+              const room = draft.messageRoomList.find(
+                (room) => room.id === roomId
+              );
+              room.name = name;
+            })
+          );
+        },
+        setApiKey: (apiKey) => set(() => ({ apiKey })),
+        deleteRoom: (roomId) => {
+          set(
+            produce((draft) => {
+              const rooms = draft.messageRoomList.filter(
+                (room) => room.id !== roomId
+              );
+              draft.messageRoomList = rooms;
 
-          const configuration = new Configuration({
-            apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
-          });
-          const openai = new OpenAIApi(configuration);
-          const messages = room?.messages?.map((msg) => {
-            return {
-              content: msg.content,
-              role: msg.role,
-            };
-          });
+              if (draft.currentRoomId === roomId) {
+                draft.currentRoomId = null;
+              }
+            })
+          );
+        },
+        switchDarkMode: () => {
+          set(
+            produce((draft) => {
+              draft.darkMode = draft.darkMode === "dark" ? "light" : "dark";
+            })
+          );
+        },
 
-          const completion = await openai.createChatCompletion({
-            model: "gpt-3.5-turbo-0301",
-            messages: messages,
-          });
-          const newMessage = completion?.data?.choices[0]?.message;
-          if (newMessage) {
+        addRoomMessage: (
+          roomId,
+          message,
+          tokensUsed = 0,
+          systemPrompt = null
+        ) => {
+          const existingRoom = get().messageRoomList.find(
+            (room) => room.id === roomId
+          );
+          if (!existingRoom) {
+            set((state) => ({
+              messageRoomList: [
+                ...state.messageRoomList,
+                {
+                  id: roomId,
+                  name: roomId,
+                  messages: [systemPrompt, message],
+                  tokensUsed: 0,
+                },
+              ],
+              currentRoomId: roomId,
+            }));
+          } else {
             set(
               produce((draft) => {
                 const room = draft.messageRoomList.find(
                   (room) => room.id === roomId
                 );
-                room.messages.push({
-                  id: completion?.data?.id,
-                  ...newMessage,
-                });
+                room.tokensUsed += tokensUsed;
+                room.messages.push(message);
               })
             );
           }
         },
-        addRoom: (room) => {
-          set(
-            produce((draft) => {
-              draft.messageRoomList.push(room);
-            })
-          );
-        },
-
-        setCurrentRoomId: (currentRoomId) => set(() => ({ currentRoomId })),
       }),
+
       {
         name: "husks",
         getStorage: () => IDBStorage,
         partialize: (state) => ({
           messageRoomList: state.messageRoomList,
+          darkMode: state.darkMode,
+          apiKey: state.apiKey,
         }),
         version: 1,
       }
