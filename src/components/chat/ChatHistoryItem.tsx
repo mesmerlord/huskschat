@@ -62,6 +62,9 @@ const ChatHistoryItem = ({ chatRoom }) => {
       onClick={() => {
         setCurrentRoomId(chatRoom.id);
       }}
+      sx={{
+        cursor: "pointer",
+      }}
     >
       <Card
         p="xs"

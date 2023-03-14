@@ -20,7 +20,7 @@ const TokenUsed = () => {
         </Title>
         <Title sx={{ fontSize: "13px", fontWeight: 500 }} align="center">
           {totalMessages} Messages ( ~ $
-          {Math.round((totalMessages / 1000) * 0.0002 * 1000000) / 1000000})
+          {Math.round((totalTokensUsed / 1000) * 0.0002 * 1000000) / 1000000})
         </Title>
       </Stack>
     </>

@@ -28,6 +28,7 @@
     "eslint-config-next": "13.2.4",
     "idb-keyval": "^6.2.0",
     "immer": "^9.0.19",
+    "jspdf": "^2.5.1",
     "next": "13.2.4",
     "nookies": "^2.5.2",
     "openai": "^3.2.1",

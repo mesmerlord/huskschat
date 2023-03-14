@@ -1,22 +1,30 @@
 import {
   ActionIcon,
   Avatar,
+  Button,
   Card,
   Container,
   Group,
+  Menu,
   Stack,
   Text,
   Title,
 } from "@mantine/core";
 import dayjs from "dayjs";
 import calendar from "dayjs/plugin/calendar";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { ChatCompletionRequestMessageRoleEnum } from "./ChatRoom";
 import Link from "next/link";
 import { Prism } from "@mantine/prism";
 import { useStore } from "@/store/store";
 import ReactMarkdown from "react-markdown";
-import { IconRobot } from "@tabler/icons-react";
+import {
+  IconRobot,
+  IconBookDownload,
+  IconDotsVertical,
+} from "@tabler/icons-react";
+import jsPDF from "jspdf";
+
 interface ChatMessageProps {
   id: string;
   content: string;
@@ -24,6 +32,27 @@ interface ChatMessageProps {
 }
 const ChatMessage = ({ id, content, role }: ChatMessageProps) => {
   const darkMode = useStore((state) => state.darkMode);
+  const documentRef = useRef(null);
+
+  const handleGeneratePdf = () => {
+    const doc = new jsPDF("p", "px", "a4");
+
+    doc.setFontSize(10);
+
+    // Adding the fonts.
+    doc.setFont("Arial", "normal");
+
+    doc.html(documentRef.current, {
+      width: 400,
+      windowWidth: 800,
+      x: 10,
+      y: 10,
+
+      async callback(doc) {
+        await doc.save("document.pdf");
+      },
+    });
+  };
 
   const messageColor = (theme) => {
     switch (role) {
@@ -96,8 +125,25 @@ const ChatMessage = ({ id, content, role }: ChatMessageProps) => {
             )}
           </Stack>
           <Stack p={0} spacing={2} sx={{ maxWidth: "80%" }} align="flex-end">
-            <Container>{textChunks}</Container>
+            <Container ref={documentRef}>{textChunks}</Container>
           </Stack>
+          <Menu shadow="md" width={200} ml="auto" withinPortal>
+            <Menu.Target>
+              <ActionIcon>
+                <IconDotsVertical />
+              </ActionIcon>
+            </Menu.Target>
+
+            <Menu.Dropdown>
+              <Menu.Label>Options</Menu.Label>
+              <Menu.Item
+                onClick={handleGeneratePdf}
+                icon={<IconBookDownload size={14} />}
+              >
+                Download As PDF
+              </Menu.Item>
+            </Menu.Dropdown>
+          </Menu>
         </Group>
       </Card>
     </>
