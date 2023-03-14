@@ -74,7 +74,7 @@ const Layout = ({ component, children }: LayoutProps) => {
         description={description}
         url={`https://husks.org`}
         title={tagLine}
-        image={"/OgImage.png"}
+        image={"OgImage.png"}
       />
 
       <Background>
