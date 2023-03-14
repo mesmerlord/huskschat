@@ -23,7 +23,7 @@ const Seo = ({ description, title, url, image }: SeoProps) => {
         <meta property="og:type" content="article" />
         <meta property="og:title" content={`${title}`} />
         <meta property="og:site_name" content={`${siteName}`} />
-        <meta property="og:image" content={`${image}`} />
+        <meta property="og:image" content={`${siteUrl}${image}`} />
         <meta property="twitter:card" content={`summary_large_image`} />
         <meta property="twitter:url" content={`${siteUrl}`} />
         <meta property="twitter:title" content={`${title}`} />
