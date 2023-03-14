@@ -11,6 +11,7 @@ interface SeoProps {
 
 const Seo = ({ description, title, url, image }: SeoProps) => {
   const siteName = "Husks";
+  const siteUrl = "https://www.husks.org/";
 
   return (
     <>
@@ -23,11 +24,12 @@ const Seo = ({ description, title, url, image }: SeoProps) => {
         <meta property="og:title" content={`${title}`} />
         <meta property="og:site_name" content={`${siteName}`} />
         <meta property="og:image" content={`${image}`} />
-        <meta name="twitter:card" content={`${description}`} />
-        <meta name="twitter:title" content={`${title}`} />
-        <meta name="twitter:label1" content="Est reading time" />
-        <meta name="twitter:data1" content="10 minutes" />
-        <meta name="twitter:image" content={`${image}`} />
+        <meta property="twitter:card" content={`summary_large_image`} />
+        <meta property="twitter:url" content={`${siteUrl}`} />
+        <meta property="twitter:title" content={`${title}`} />
+        <meta property="twitter:label1" content="Est reading time" />
+        <meta property="twitter:data1" content="10 minutes" />
+        <meta property="twitter:image" content={`${siteUrl}${image}`} />
         <link rel="canonical" href={`${url}`} />
       </Head>
     </>
