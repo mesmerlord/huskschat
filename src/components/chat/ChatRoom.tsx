@@ -1,6 +1,5 @@
 import {
   ActionIcon,
-  Alert,
   Box,
   Container,
   Group,
@@ -9,6 +8,7 @@ import {
   ScrollArea,
   Stack,
   Text,
+  Title,
 } from "@mantine/core";
 import { useScrollIntoView } from "@mantine/hooks";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -24,6 +24,8 @@ import {
 } from "@/store/store";
 import ChangeApiModal from "../common/ChangeApiModal";
 import { showNotification } from "@mantine/notifications";
+import { FeaturesTitle } from "../common/Features";
+
 interface ChatRoomProps {
   roomId: string;
 }
@@ -219,6 +221,32 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
   return (
     <>
       <Stack sx={{ height: "84vh" }} p={0}>
+        {!roomId && (
+          <Container>
+            <Group position="center" spacing={2}>
+              <Title
+                order={1}
+                sx={(theme) => ({
+                  [theme.fn.smallerThan("md")]: { fontSize: "30px" },
+                  fontSize: "45px",
+                })}
+              >
+                🌽Husks
+              </Title>
+              <Title
+                order={1}
+                sx={(theme) => ({
+                  color: theme.colors.yellow[8],
+                  [theme.fn.smallerThan("md")]: { fontSize: "30px" },
+                  fontSize: "45px",
+                })}
+              >
+                Chat
+              </Title>
+            </Group>
+            <FeaturesTitle />
+          </Container>
+        )}
         <ScrollArea
           p={0}
           scrollbarSize={1}

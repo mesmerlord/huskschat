@@ -139,7 +139,7 @@ const Layout = ({ component, children }: LayoutProps) => {
                       [theme.fn.smallerThan("md")]: { fontSize: "18px" },
                     })}
                   >
-                    🌽Husk Chat
+                    🌽Husks Chat
                   </Title>
                 </Col>
                 <Col span={5}>
@@ -168,7 +168,7 @@ const Layout = ({ component, children }: LayoutProps) => {
           >
             <Stack>
               <NewChatButton />
-              <Box sx={{ height: "300px" }}>
+              <Box sx={{ height: "400px" }}>
                 <PreviousChats />
               </Box>
               <Stack>
