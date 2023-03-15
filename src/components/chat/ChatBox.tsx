@@ -23,6 +23,12 @@ const ChatBox = ({ onMessageSubmit, message, setMessage }: ChatBoxProps) => {
         e.preventDefault();
         onMessageSubmit();
       }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          onMessageSubmit();
+        }
+      }}
     >
       <Container>
         <Box sx={{ width: "100%", marginLeft: "auto", marginRight: "auto" }}>
