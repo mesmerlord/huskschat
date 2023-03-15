@@ -99,14 +99,22 @@ const ChatMessage = ({ id, content, role }: ChatMessageProps) => {
               role === "assistant" &&
               "rgba(255, 255, 255, 0.15)",
           },
+
           marginBottom: "1rem",
           backgroundColor: messageColor(theme),
+
+          [theme.fn.smallerThan("xs")]: {
+            p: {
+              fontSize: "0.8rem",
+            },
+            padding: "0.5rem",
+          },
         })}
         shadow="sm"
       >
         <Group align="flex-start" noWrap>
           <Stack spacing={2}>
-            <Avatar>{role === "assistant" && <IconRobot />}</Avatar>
+            <Avatar size="sm">{role === "assistant" && <IconRobot />}</Avatar>
             {role === "assistant" && (
               <Title
                 align="center"

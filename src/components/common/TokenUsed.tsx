@@ -15,10 +15,23 @@ const TokenUsed = () => {
   return (
     <>
       <Stack spacing={2}>
-        <Title align="center" order={4}>
+        <Title
+          align="center"
+          order={4}
+          sx={(theme) => ({
+            [theme.fn.smallerThan("sm")]: { fontSize: "13px" },
+          })}
+        >
           {totalTokensUsed} Tokens Used
         </Title>
-        <Title sx={{ fontSize: "13px", fontWeight: 500 }} align="center">
+        <Title
+          sx={(theme) => ({
+            fontSize: "13px",
+            fontWeight: 500,
+            [theme.fn.smallerThan("sm")]: { fontSize: "13px" },
+          })}
+          align="center"
+        >
           {totalMessages} Messages ( ~ $
           {Math.round((totalTokensUsed / 1000) * 0.0002 * 1000000) / 1000000})
         </Title>

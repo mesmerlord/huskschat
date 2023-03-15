@@ -187,8 +187,18 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
   return (
     <>
       <Stack sx={{ height: "84vh" }} p={0}>
-        <ScrollArea p="xs" scrollbarSize={1} sx={{ height: "84vh" }}>
-          <Container>
+        <ScrollArea
+          p={0}
+          scrollbarSize={1}
+          sx={{ height: "84vh", paddingBottom: "1rem" }}
+        >
+          <Container
+            sx={(theme) => ({
+              [theme.fn.smallerThan("sm")]: {
+                padding: "0.2rem",
+              },
+            })}
+          >
             <Stack>
               {openAiLoading && (
                 <Group position="center" pt="xs">
