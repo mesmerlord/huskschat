@@ -74,7 +74,10 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
           .then((res) => {
             if (res?.status === 200) {
               setOpenAiLoading(false);
-              return res;
+              const resJson = res.json().then((data) => {
+                return data;
+              });
+              return resJson;
             } else {
               console.log(res);
               const resJson = res.json().then((data) => {
