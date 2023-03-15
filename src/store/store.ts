@@ -67,6 +67,7 @@ const getDefaultInitialState: storeState = () => ({
   darkMode: "dark",
   messageRoomList: [],
   currentRoomId: null,
+  userPlan: "not_set",
 });
 const zustandContext: any = createContext();
 export const Provider = zustandContext.Provider;
@@ -96,6 +97,33 @@ export const getOpenAiCompletion = async (
   return completion;
 };
 
+export const getServerCompletion = async (messages: ChatMessageType[]) => {
+  const newMessages = messages?.map((msg) => {
+    if (Boolean(msg?.content)) {
+      return {
+        content: msg.content,
+        role: msg.role,
+      };
+    }
+  });
+
+  const response = await fetch("/api/completion", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      messages: newMessages,
+    }),
+  })
+    .then((res) => res)
+    .catch((err) => {
+      console.error("Error with OpenAI request:", err);
+      return err;
+    });
+  return response;
+};
+
 export const initializeStore = (preloadedState = {}) => {
   return create(
     persist(
@@ -116,6 +144,7 @@ export const initializeStore = (preloadedState = {}) => {
           );
         },
         setApiKey: (apiKey) => set(() => ({ apiKey })),
+        setUserPlan: (userPlan) => set(() => ({ userPlan })),
         deleteRoom: (roomId) => {
           set(
             produce((draft) => {
@@ -185,6 +214,7 @@ export const initializeStore = (preloadedState = {}) => {
           messageRoomList: state.messageRoomList,
           darkMode: state.darkMode,
           apiKey: state.apiKey,
+          userPlan: state.userPlan,
         }),
         version: 1,
       }

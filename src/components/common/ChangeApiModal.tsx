@@ -2,6 +2,7 @@ import { useStore } from "@/store/store";
 import {
   Button,
   Container,
+  Divider,
   Group,
   Modal,
   PasswordInput,
@@ -14,6 +15,8 @@ import { Configuration, OpenAIApi } from "openai";
 const ChangeApiModal = ({ opened, setOpened }) => {
   const setApiKey = useStore((state) => state.setApiKey);
   const apiKey = useStore((state) => state.apiKey);
+  const setUserPlan = useStore((state) => state.setUserPlan);
+  const userPlan = useStore((state) => state.userPlan);
 
   const [newApiKey, setNewApiKey] = useState(apiKey);
   const [error, setError] = useState("");
@@ -23,7 +26,7 @@ const ChangeApiModal = ({ opened, setOpened }) => {
       apiKey: newApiKey,
     });
     const openai = new OpenAIApi(configuration);
-    const completion = await openai
+    await openai
       .retrieveModel("text-davinci-003")
       .then((data) => {
         setApiKey(newApiKey);
@@ -74,6 +77,31 @@ const ChangeApiModal = ({ opened, setOpened }) => {
             Set API Key
           </Button>
         </Group>
+        <Divider
+          my="xs"
+          label={
+            <>
+              <Text size="lg">Or Try For Free</Text>
+            </>
+          }
+          labelPosition="center"
+        />
+        <Container sx={{ marginBottom: "20px" }}>
+          <Text py={10}>
+            The messages you send using this will be proxied through our API
+            keys.
+          </Text>
+
+          <Button
+            fullWidth
+            onClick={() => {
+              setUserPlan("free");
+              setOpened(false);
+            }}
+          >
+            {userPlan === "free" ? "Already on Free Plan" : "Try For Free"}
+          </Button>
+        </Container>
       </Container>
     </Modal>
   );

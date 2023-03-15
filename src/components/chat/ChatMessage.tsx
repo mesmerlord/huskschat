@@ -1,7 +1,6 @@
 import {
   ActionIcon,
   Avatar,
-  Button,
   Card,
   Container,
   Group,
@@ -12,9 +11,8 @@ import {
 } from "@mantine/core";
 import dayjs from "dayjs";
 import calendar from "dayjs/plugin/calendar";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useMemo, useRef } from "react";
 import { ChatCompletionRequestMessageRoleEnum } from "./ChatRoom";
-import Link from "next/link";
 import { Prism } from "@mantine/prism";
 import { useStore } from "@/store/store";
 import ReactMarkdown from "react-markdown";
@@ -42,7 +40,7 @@ const ChatMessage = ({ id, content, role }: ChatMessageProps) => {
     // Adding the fonts.
     doc.setFont("Arial", "normal");
 
-    doc.html(documentRef.current, {
+    doc.html(documentRef?.current, {
       width: 400,
       windowWidth: 800,
       x: 10,
@@ -65,28 +63,30 @@ const ChatMessage = ({ id, content, role }: ChatMessageProps) => {
     }
   };
   dayjs.extend(calendar);
-  const [hovered, setHovered] = useState(false);
-
   const codeRegex = /```(?:.*)\n([\s\S]*?)\n```/;
   const codeChunks = content.split(codeRegex);
 
-  const textChunks = codeChunks.map((chunk, index) => {
-    if (index % 2 === 1) {
-      return <Prism key={index}>{chunk}</Prism>;
-    } else {
-      return (
-        <Text
-          key={index}
-          sx={(theme) => ({
-            color:
-              darkMode === "light" && role === "assistant" ? "black" : "white",
-          })}
-        >
-          <ReactMarkdown>{chunk}</ReactMarkdown>
-        </Text>
-      );
-    }
-  });
+  const textChunks = useMemo(() => {
+    return codeChunks.map((chunk, index) => {
+      if (index % 2 === 1) {
+        return <Prism key={index}>{chunk}</Prism>;
+      } else {
+        return (
+          <Text
+            key={index}
+            sx={(theme) => ({
+              color:
+                darkMode === "light" && role === "assistant"
+                  ? "black"
+                  : "white",
+            })}
+          >
+            <ReactMarkdown>{chunk}</ReactMarkdown>
+          </Text>
+        );
+      }
+    });
+  }, [codeChunks, darkMode, role]);
 
   return (
     <>

@@ -16,9 +16,11 @@ import ChatBox from "./ChatBox";
 import ChatMessage from "./ChatMessage";
 import {
   ChatCompletionRequestMessageRoleEnum,
+  ChatMessageType,
   ChatRoomType,
   getOpenAiCompletion,
   useStore,
+  getServerCompletion,
 } from "@/store/store";
 import ChangeApiModal from "../common/ChangeApiModal";
 import { showNotification } from "@mantine/notifications";
@@ -40,6 +42,7 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
   const addRoomMessage = useStore((state) => state.addRoomMessage);
   const setRoomName = useStore((state) => state.setRoomName);
   const apiKey = useStore((state) => state.apiKey);
+  const userPlan = useStore((state) => state.userPlan);
 
   const [room, setRoom] = useState<ChatRoomType>(
     messageRoomList?.find((storeRoom) => storeRoom.id === roomId) || {
@@ -61,8 +64,64 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
     setMessage("");
   }, [roomId, messageRoomList]);
 
+  const switchResponseForPlan = async (
+    plan: string,
+    messages: ChatMessageType[]
+  ) => {
+    switch (plan) {
+      case "free":
+        const freeCompletion = await getServerCompletion(messages)
+          .then((res) => {
+            if (res?.status === 200) {
+              setOpenAiLoading(false);
+              return res;
+            } else {
+              console.log(res);
+              const resJson = res.json().then((data) => {
+                showNotification({
+                  title: "Error",
+                  message:
+                    data?.error?.message ||
+                    "Error communicating with OpenAI, please try again later",
+                  color: "red",
+                  icon: <ActionIcon color="red" />,
+                });
+                return null;
+              });
+            }
+          })
+          .catch((err) => {
+            setOpenAiLoading(false);
+            return err;
+          });
+        return freeCompletion;
+      case "hosted":
+        const openAiCompletion = getOpenAiCompletion(messages, apiKey)
+          .then((res) => {
+            setOpenAiLoading(false);
+            return res;
+          })
+          .catch((err) => {
+            setOpenAiLoading(false);
+            showNotification({
+              title: "Error",
+              message:
+                err?.error?.message ||
+                "Error communicating with OpenAI, please try again later",
+              color: "red",
+              icon: <ActionIcon color="red" />,
+            });
+            return null;
+          });
+        return openAiCompletion;
+
+      default:
+        return null as never;
+    }
+  };
+
   const onMessageSubmit = async () => {
-    if (!apiKey) {
+    if (!apiKey && userPlan !== "free") {
       setApiKeyModal(true);
       return;
     }
@@ -83,28 +142,13 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
       addRoomMessage(newRoomId, userPrompt, 0, systemPrompt);
       setMessage("");
       setOpenAiLoading(true);
-
-      const completion = await getOpenAiCompletion(
-        [systemPrompt, userPrompt],
-        apiKey
-      )
-        .then((res) => {
-          setOpenAiLoading(false);
-          return res;
-        })
-        .catch((err) => {
-          setOpenAiLoading(false);
-          showNotification({
-            title: "Error",
-            message: "Error communicating with OpenAI, please try again later",
-            color: "red",
-            icon: <ActionIcon color="red" />,
-          });
-          return null;
-        });
+      const completion = await switchResponseForPlan(userPlan, [
+        systemPrompt,
+        userPrompt,
+      ]);
 
       const newMessage = completion?.data?.choices[0]?.message;
-      if (completion && completion.data.choices.length > 0 && newMessage) {
+      if (completion && completion?.data?.choices?.length > 0 && newMessage) {
         const assistantPrompt = {
           id: completion?.data?.id,
           role: ChatCompletionRequestMessageRoleEnum.ASSISTANT,
@@ -128,26 +172,10 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
           content:
             "Answer with a upto 3 word title for this chat, only the title.",
         };
-        const titleCompletion = await getOpenAiCompletion(
-          [systemPrompt, userPrompt, newTitlePrompt],
-          apiKey
-        )
-          .then((res) => {
-            setOpenAiLoading(false);
-            return res;
-          })
-          .catch((err) => {
-            setOpenAiLoading(false);
-            showNotification({
-              title: "Error",
-              message:
-                "Error communicating with OpenAI, please try again later",
-              color: "red",
-              icon: <ActionIcon color="red" />,
-            });
-            return null;
-          });
-
+        const titleCompletion = await switchResponseForPlan(userPlan, [
+          systemPrompt,
+          userPrompt,
+        ]);
         const newTitleMessage = titleCompletion?.data?.choices[0]?.message;
         if (
           titleCompletion &&
@@ -162,12 +190,13 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
       addRoomMessage(roomId, userPrompt);
 
       setOpenAiLoading(true);
-      const completion = await getOpenAiCompletion(
-        [...room.messages, userPrompt],
-        apiKey
-      );
+      const completion = await switchResponseForPlan(userPlan, [
+        ...room.messages,
+        userPrompt,
+      ]);
+
       setOpenAiLoading(false);
-      if (completion && completion.data.choices.length > 0) {
+      if (completion && completion?.data?.choices?.length > 0) {
         const newMessage = completion?.data?.choices[0]?.message;
 
         const assistantPrompt = {
