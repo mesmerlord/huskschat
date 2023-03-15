@@ -36,12 +36,13 @@ const ChatBox = ({ onMessageSubmit, message, setMessage }: ChatBoxProps) => {
             <Col span={10}>
               <Textarea
                 sx={{ width: "99%" }}
-                minRows={2}
+                minRows={1}
                 maxRows={10}
                 autosize
                 placeholder="Type your message"
                 value={message}
                 onChange={(event) => setMessage(event.currentTarget.value)}
+                size="lg"
               />
             </Col>
             <Col span={1}>

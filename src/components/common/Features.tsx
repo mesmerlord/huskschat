@@ -132,7 +132,7 @@ export function FeaturesTitle() {
         </Title>
         <Center
           sx={(theme) => ({
-            [theme.fn.smallerThan("md")]: { marginBottom: -20 },
+            [theme.fn.smallerThan("md")]: { marginBottom: -30 },
           })}
         >
           <IconCornerRightDownDouble />
