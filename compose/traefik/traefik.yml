@@ -24,6 +24,8 @@ certificatesResolvers:
       # https://docs.traefik.io/master/https/acme/#httpchallenge
       httpChallenge:
         entryPoint: web
+      dnsChallenge:
+        provider: cloudflare
 
 http:
   routers:
