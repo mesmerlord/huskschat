@@ -5,11 +5,12 @@ import {
   Container,
   Group,
   Menu,
+  ScrollArea,
   Stack,
+  Table,
   Text,
   Title,
 } from "@mantine/core";
-import dayjs from "dayjs";
 import calendar from "dayjs/plugin/calendar";
 import React, { useMemo, useRef } from "react";
 import { ChatCompletionRequestMessageRoleEnum } from "./ChatRoom";
@@ -22,6 +23,7 @@ import {
   IconDotsVertical,
 } from "@tabler/icons-react";
 import jsPDF from "jspdf";
+import remarkGfm from "remark-gfm";
 
 interface ChatMessageProps {
   id: string;
@@ -62,31 +64,6 @@ const ChatMessage = ({ id, content, role }: ChatMessageProps) => {
         return "#67b3ff";
     }
   };
-  dayjs.extend(calendar);
-  const codeRegex = /```(?:.*)\n([\s\S]*?)\n```/;
-  const codeChunks = content.split(codeRegex);
-
-  const textChunks = useMemo(() => {
-    return codeChunks.map((chunk, index) => {
-      if (index % 2 === 1) {
-        return <Prism key={index}>{chunk}</Prism>;
-      } else {
-        return (
-          <Text
-            key={index}
-            sx={(theme) => ({
-              color:
-                darkMode === "light" && role === "assistant"
-                  ? "black"
-                  : "white",
-            })}
-          >
-            <ReactMarkdown>{chunk}</ReactMarkdown>
-          </Text>
-        );
-      }
-    });
-  }, [codeChunks, darkMode, role]);
 
   return (
     <>
@@ -107,12 +84,12 @@ const ChatMessage = ({ id, content, role }: ChatMessageProps) => {
             p: {
               fontSize: "0.8rem",
             },
-            padding: "0.5rem",
+            padding: "8px",
           },
         })}
         shadow="sm"
       >
-        <Group align="flex-start" noWrap>
+        <Group align="flex-start" spacing={10} noWrap>
           <Stack spacing={2}>
             <Avatar size="sm">{role === "assistant" && <IconRobot />}</Avatar>
             {role === "assistant" && (
@@ -132,9 +109,12 @@ const ChatMessage = ({ id, content, role }: ChatMessageProps) => {
               </Title>
             )}
           </Stack>
-          <Stack p={0} spacing={2} sx={{ maxWidth: "80%" }} align="flex-end">
-            <Container ref={documentRef}>{textChunks}</Container>
-          </Stack>
+          <Stack
+            p={0}
+            spacing={2}
+            sx={{ maxWidth: "80%" }}
+            align="flex-end"
+          ></Stack>
           <Menu shadow="md" width={200} ml="auto" withinPortal>
             <Menu.Target>
               <ActionIcon>
@@ -153,6 +133,95 @@ const ChatMessage = ({ id, content, role }: ChatMessageProps) => {
             </Menu.Dropdown>
           </Menu>
         </Group>
+
+        <Container
+          ref={documentRef}
+          sx={(theme) => ({
+            [theme.fn.smallerThan("md")]: {
+              padding: "0.1rem",
+            },
+          })}
+        >
+          <ScrollArea>
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={{
+                code({ node, inline, className, children, ...props }) {
+                  const match = /language-(\w+)/.exec(className || "");
+                  return !inline && match ? (
+                    <Prism
+                      sx={(theme) => ({
+                        [theme.fn.smallerThan("xs")]: {
+                          pre: {
+                            overflowWrap: "break-word",
+                          },
+                          div: {
+                            maxWidth: "100%",
+                          },
+                          overflow: "scroll",
+                          span: {
+                            fontSize: "0.7rem !important",
+                          },
+                        },
+                      })}
+                      language={match}
+                    >
+                      {children[0]}
+                    </Prism>
+                  ) : (
+                    <code>"{children}"</code>
+                  );
+                },
+                table({ node, children, ...props }) {
+                  return (
+                    <Table
+                      fontSize={16}
+                      striped
+                      highlightOnHover
+                      withBorder
+                      withColumnBorders
+                      sx={(theme) => ({
+                        // tableLayout: "fixed",
+                        textAlign: "left",
+                        td: {
+                          width: "5px",
+                        },
+                        [theme.fn.smallerThan("xs")]: {
+                          width: "33%",
+
+                          td: {
+                            fontSize: "0.7rem !important",
+                            padding: "0.5rem !important",
+                          },
+                          th: {
+                            padding: "0.2rem !important",
+                            fontSize: "0.7rem !important",
+                          },
+                        },
+                        [theme.fn.smallerThan("sm")]: {
+                          width: "50%",
+
+                          td: {
+                            fontSize: "0.7rem !important",
+                            padding: "0.5rem !important",
+                          },
+                          th: {
+                            padding: "0.2rem !important",
+                            fontSize: "0.7rem !important",
+                          },
+                        },
+                      })}
+                    >
+                      {children}
+                    </Table>
+                  );
+                },
+              }}
+            >
+              {content}
+            </ReactMarkdown>
+          </ScrollArea>
+        </Container>
       </Card>
     </>
   );
