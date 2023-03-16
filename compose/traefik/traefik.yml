@@ -15,17 +15,17 @@ entryPoints:
     # https
     address: ":443"
 
-certificatesResolvers:
-  letsencrypt:
-    # https://docs.traefik.io/master/https/acme/#lets-encrypt
-    acme:
-      email: "mesmer@mail.com"
-      storage: /etc/traefik/acme/acme.json
-      # https://docs.traefik.io/master/https/acme/#httpchallenge
-      httpChallenge:
-        entryPoint: web
-      dnsChallenge:
-        provider: cloudflare
+# certificatesResolvers:
+#   letsencrypt:
+#     # https://docs.traefik.io/master/https/acme/#lets-encrypt
+#     acme:
+#       email: "mesmer@mail.com"
+#       storage: /etc/traefik/acme/acme.json
+#       # https://docs.traefik.io/master/https/acme/#httpchallenge
+#       httpChallenge:
+#         entryPoint: web
+#       dnsChallenge:
+#         provider: cloudflare
 
 http:
   routers:
