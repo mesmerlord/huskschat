@@ -1,0 +1,26 @@
+version: "3"
+
+services:
+  reverse-proxy:
+    # The official v2.0 Traefik docker image
+    image: production_traefik
+    # Enables the web UI and tells Traefik to listen to docker
+    ports:
+      # The HTTP port
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      # So that Traefik can listen to the Docker events
+      - /var/run/docker.sock:/var/run/docker.sock
+      # Mount current directory including all configuration files, certificates, etc.
+      - ./:/etc/traefik
+
+    build:
+      context: .
+      dockerfile: ./compose/traefik/Dockerfile
+
+networks:
+  default:
+    external:
+      name: traefik_proxy

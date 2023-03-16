@@ -1,0 +1,36 @@
+version: "3"
+
+volumes:
+  production_postgres_data: {}
+  production_postgres_data_backups: {}
+
+services:
+  postgres:
+    build:
+      context: .
+      dockerfile: ./compose/production/postgres/Dockerfile
+    image: husks_production_postgres
+    volumes:
+      - production_postgres_data:/var/lib/postgresql/data
+      - production_postgres_data_backups:/backups
+    env_file:
+      - .env
+
+  frontend: &frontend
+    image: husks_production_frontend
+    build:
+      context: .
+      dockerfile: ./compose/frontend/Dockerfile
+
+    depends_on:
+      - postgres
+    restart: on-failure
+    env_file:
+      - .env
+
+    networks:
+      - traefik_proxy
+
+networks:
+  traefik_proxy:
+    external: true
