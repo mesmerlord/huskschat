@@ -5,11 +5,11 @@ entryPoints:
   web:
     # http
     address: ":80"
-    http:
-      # https://docs.traefik.io/routing/entrypoints/#entrypoint
-      redirections:
-        entryPoint:
-          to: web-secure
+    # http:
+    #   # https://docs.traefik.io/routing/entrypoints/#entrypoint
+    #   redirections:
+    #     entryPoint:
+    #       to: web-secure
 
   web-secure:
     # https
@@ -32,26 +32,26 @@ http:
     web-secure-urpics-frontend:
       rule: "Host(`urpics.art`) || Host(`www.urpics.art`)"
       entryPoints:
-        - web-secure
+        - web
       middlewares:
         - csrf
         - test-compress
       service: urpics_frontend
-      tls:
-        # https://docs.traefik.io/master/routing/routers/#certresolver
-        certResolver: letsencrypt
+      # tls:
+      #   # https://docs.traefik.io/master/routing/routers/#certresolver
+      #   certResolver: letsencrypt
 
     web-secure-husks-frontend:
       rule: "Host(`husks.org`) || Host(`www.husks.org`)"
       entryPoints:
-        - web-secure
+        - web
       middlewares:
         - csrf
         - test-compress
       service: husks_frontend
-      tls:
-        # https://docs.traefik.io/master/routing/routers/#certresolver
-        certResolver: letsencrypt
+      # tls:
+      #   # https://docs.traefik.io/master/routing/routers/#certresolver
+      #   certResolver: letsencrypt
 
   middlewares:
     csrf:
