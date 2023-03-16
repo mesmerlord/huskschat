@@ -22,8 +22,8 @@ services:
       context: .
       dockerfile: ./compose/frontend/Dockerfile
 
-    depends_on:
-      - postgres
+    # depends_on:
+    #   - postgres
     restart: on-failure
     env_file:
       - .env
