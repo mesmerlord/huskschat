@@ -28,7 +28,7 @@ certificatesResolvers:
 http:
   routers:
     web-secure-urpics-frontend:
-      rule: "Host(`urpics.art`)|Host(`www.urpics.art`)"
+      rule: "Host(`urpics.art`) || Host(`www.urpics.art`)"
       entryPoints:
         - web-secure
       middlewares:
@@ -40,7 +40,7 @@ http:
         certResolver: letsencrypt
 
     web-secure-husks-frontend:
-      rule: "Host(`husks.org`)|Host(`www.husks.org`)"
+      rule: "Host(`husks.org`) || Host(`www.husks.org`)"
       entryPoints:
         - web-secure
       middlewares:
