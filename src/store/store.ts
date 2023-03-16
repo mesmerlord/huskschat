@@ -166,6 +166,18 @@ export const initializeStore = (preloadedState = {}) => {
             })
           );
         },
+        replaceRoomMessage: (roomId, messageId, newMessage, tokensUsed = 0) => {
+          set(
+            produce((draft) => {
+              const room = draft.messageRoomList.find(
+                (room) => room.id === roomId
+              );
+              room.messages.pop();
+              room.messages.push(newMessage);
+              room.tokensUsed += tokensUsed;
+            })
+          );
+        },
 
         addRoomMessage: (
           roomId,
@@ -173,9 +185,13 @@ export const initializeStore = (preloadedState = {}) => {
           tokensUsed = 0,
           systemPrompt = null
         ) => {
+          if (!message.content) {
+            return;
+          }
           const existingRoom = get().messageRoomList.find(
             (room) => room.id === roomId
           );
+
           if (!existingRoom) {
             const messagesToAdd =
               systemPrompt === null ? [message] : [systemPrompt, message];

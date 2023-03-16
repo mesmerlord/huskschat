@@ -1,6 +1,8 @@
 import {
   ActionIcon,
   Avatar,
+  Box,
+  Button,
   Card,
   Container,
   Group,
@@ -11,8 +13,7 @@ import {
   Text,
   Title,
 } from "@mantine/core";
-import calendar from "dayjs/plugin/calendar";
-import React, { useMemo, useRef } from "react";
+import React, { useRef } from "react";
 import { ChatCompletionRequestMessageRoleEnum } from "./ChatRoom";
 import { Prism } from "@mantine/prism";
 import { useStore } from "@/store/store";
@@ -21,6 +22,7 @@ import {
   IconRobot,
   IconBookDownload,
   IconDotsVertical,
+  IconRepeat,
 } from "@tabler/icons-react";
 import jsPDF from "jspdf";
 import remarkGfm from "remark-gfm";
@@ -29,8 +31,16 @@ interface ChatMessageProps {
   id: string;
   content: string;
   role: typeof ChatCompletionRequestMessageRoleEnum[keyof typeof ChatCompletionRequestMessageRoleEnum];
+  lastMessage: boolean;
+  regenerateMessage: (messageId) => void;
 }
-const ChatMessage = ({ id, content, role }: ChatMessageProps) => {
+const ChatMessage = ({
+  id,
+  content,
+  role,
+  lastMessage,
+  regenerateMessage,
+}: ChatMessageProps) => {
   const darkMode = useStore((state) => state.darkMode);
   const documentRef = useRef(null);
 
@@ -238,6 +248,18 @@ const ChatMessage = ({ id, content, role }: ChatMessageProps) => {
           </ScrollArea>
         </Container>
       </Card>
+      {lastMessage && role === "assistant" && (
+        <Group position="center">
+          <Button
+            onClick={() => {
+              regenerateMessage(id);
+            }}
+            leftIcon={<IconRepeat />}
+          >
+            Regenerate
+          </Button>
+        </Group>
+      )}
     </>
   );
 };

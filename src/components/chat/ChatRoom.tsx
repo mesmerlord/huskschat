@@ -1,6 +1,5 @@
 import {
   ActionIcon,
-  Box,
   Container,
   Group,
   Loader,
@@ -38,10 +37,12 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
   const [message, setMessage] = useState("");
 
   const [openAiLoading, setOpenAiLoading] = useState(false);
+  const [openAiReloading, setOpenAiReloading] = useState(false);
   const [apiKeyModal, setApiKeyModal] = useState(false);
 
   const messageRoomList = useStore((state) => state.messageRoomList);
   const addRoomMessage = useStore((state) => state.addRoomMessage);
+  const replaceRoomMessage = useStore((state) => state.replaceRoomMessage);
   const setRoomName = useStore((state) => state.setRoomName);
   const apiKey = useStore((state) => state.apiKey);
   const userPlan = useStore((state) => state.userPlan);
@@ -76,6 +77,7 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
           .then((res) => {
             if (res?.status === 200) {
               setOpenAiLoading(false);
+              setOpenAiReloading(false);
               const resJson = res.json().then((data) => {
                 return data;
               });
@@ -97,6 +99,7 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
           })
           .catch((err) => {
             setOpenAiLoading(false);
+            setOpenAiReloading(false);
             return err;
           });
         return freeCompletion;
@@ -104,10 +107,12 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
         const openAiCompletion = getOpenAiCompletion(messages, apiKey)
           .then((res) => {
             setOpenAiLoading(false);
+            setOpenAiReloading(false);
             return res;
           })
           .catch((err) => {
             setOpenAiLoading(false);
+            setOpenAiReloading(false);
             showNotification({
               title: "Error",
               message:
@@ -218,6 +223,53 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
     }
   };
 
+  const regenerateMessage = async (messageId: string) => {
+    setOpenAiReloading(true);
+
+    const previousMessages = room.messages.filter(
+      (msg) => msg.id !== messageId
+    );
+    const completion = await switchResponseForPlan(userPlan, [
+      ...previousMessages,
+    ]);
+    setOpenAiReloading(false);
+
+    if (completion && completion?.data?.choices?.length > 0) {
+      const newMessage = completion?.data?.choices[0]?.message;
+      if (!newMessage) {
+        return;
+      }
+
+      const assistantPrompt = {
+        id: completion?.data?.id,
+        ...newMessage,
+      };
+      replaceRoomMessage(
+        roomId,
+        messageId,
+        assistantPrompt,
+        completion?.data?.usage?.total_tokens ?? 0
+      );
+    }
+  };
+
+  const newMessages = useMemo(() => {
+    const messages = messageRoomList
+      .find((storeRoom) => storeRoom.id === roomId)
+      ?.messages?.slice(1);
+    return messages?.map((msg, id) => {
+      return (
+        <ChatMessage
+          id={msg?.id || "test"}
+          content={msg?.content}
+          role={msg?.role}
+          lastMessage={id === messages.length - 1 && !openAiReloading}
+          regenerateMessage={regenerateMessage}
+        />
+      );
+    });
+  }, [roomId, messageRoomList, openAiReloading]);
+
   return (
     <>
       <Stack sx={{ height: "84vh" }} p={0}>
@@ -259,52 +311,26 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
               },
             })}
           >
-            <Stack>
-              {openAiLoading && (
-                <Group position="center" pt="xs">
-                  <Paper
-                    shadow="md"
-                    radius="xl"
-                    withBorder
-                    p={8}
-                    sx={{ position: "absolute", top: "93%" }}
-                  >
-                    <Group noWrap>
-                      {" "}
-                      <Loader size="sm" variant="dots" />{" "}
-                      <Text> Communicating with OpenAI</Text>
-                    </Group>
-                  </Paper>
-                </Group>
-              )}
-              <Box sx={{ marginBottom: "2rem" }}>
-                {!room && (
-                  <ChatMessage
-                    content="Welcome to the chat room"
-                    role="system"
-                    id="system-message"
-                  />
-                )}
-                {messageRoomList
-                  .find((storeRoom) => storeRoom.id === roomId)
-                  ?.messages?.slice(1)
-                  .map((msg, id) => {
-                    return (
-                      <ChatMessage
-                        id={msg?.id || "test"}
-                        content={msg.content}
-                        role={msg.role}
-                      />
-                    );
-                  })}
-              </Box>
-            </Stack>
+            <Stack spacing={2}>{newMessages}</Stack>
 
             <div ref={targetRef}></div>
             <div ref={dummy}></div>
           </Container>
         </ScrollArea>
         <ChangeApiModal opened={apiKeyModal} setOpened={setApiKeyModal} />
+        {(openAiLoading || openAiReloading) && (
+          <Group position="center" pt="xs">
+            <Paper shadow="md" radius="xl" p={8}>
+              <Group noWrap>
+                <Loader size="sm" variant="dots" />{" "}
+                <Text>
+                  {openAiLoading && "Communicating with OpenAI"}{" "}
+                  {openAiReloading && "Regenerating message"}{" "}
+                </Text>
+              </Group>
+            </Paper>
+          </Group>
+        )}
         <ChatBox
           onMessageSubmit={onMessageSubmit}
           message={message}
