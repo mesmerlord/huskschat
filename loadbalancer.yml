@@ -25,6 +25,10 @@ services:
     env_file:
       - .env
 
+    networks:
+      - default
+      - traefik_proxy
+
 networks:
   default:
     external:
