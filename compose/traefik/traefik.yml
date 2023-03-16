@@ -63,10 +63,15 @@ http:
           - text/event-stream
 
   services:
-    frontend:
+    urpics_frontend:
       loadBalancer:
         servers:
-          - url: http://frontend:3000
+          - url: http://urpics_frontend:3000
+
+    husks_frontend:
+      loadBalancer:
+        servers:
+          - url: http://husks_frontend:3000
 
 providers:
   # https://docs.traefik.io/master/providers/file/
