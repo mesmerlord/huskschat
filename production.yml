@@ -5,7 +5,7 @@ volumes:
   production_postgres_data_backups: {}
 
 services:
-  postgres:
+  husks_postgres:
     build:
       context: .
       dockerfile: ./compose/production/postgres/Dockerfile
@@ -16,7 +16,7 @@ services:
     env_file:
       - .env
 
-  frontend: &frontend
+  husks_frontend: &husks_frontend
     image: husks_production_frontend
     build:
       context: .

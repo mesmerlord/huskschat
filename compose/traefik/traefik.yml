@@ -1,16 +1,78 @@
-version: "3"
+log:
+  level: INFO
 
-volumes:
-  production_traefik: {}
+entryPoints:
+  web:
+    # http
+    address: ":80"
+    http:
+      # https://docs.traefik.io/routing/entrypoints/#entrypoint
+      redirections:
+        entryPoint:
+          to: web-secure
 
-services:
-  traefik:
-    build:
-      context: .
-      dockerfile: ./compose/production/traefik/Dockerfile
-    image: husks_production_traefik
-    volumes:
-      - production_traefik:/etc/traefik/acme
-    ports:
-      - "0.0.0.0:80:80"
-      - "0.0.0.0:443:443"
+  web-secure:
+    # https
+    address: ":443"
+
+certificatesResolvers:
+  letsencrypt:
+    # https://docs.traefik.io/master/https/acme/#lets-encrypt
+    acme:
+      email: "mesmer@mail.com"
+      storage: /etc/traefik/acme/acme.json
+      # https://docs.traefik.io/master/https/acme/#httpchallenge
+      httpChallenge:
+        entryPoint: web
+
+http:
+  routers:
+    web-secure-urpics-frontend:
+      rule: "Host(`urpics.art`)|Host(`www.urpics.art`)"
+      entryPoints:
+        - web-secure
+      middlewares:
+        - csrf
+        - test-compress
+      service: urpics_frontend
+      tls:
+        # https://docs.traefik.io/master/routing/routers/#certresolver
+        certResolver: letsencrypt
+
+    web-secure-husks-frontend:
+      rule: "Host(`husks.org`)|Host(`www.husks.org`)"
+      entryPoints:
+        - web-secure
+      middlewares:
+        - csrf
+        - test-compress
+      service: husks_frontend
+      tls:
+        # https://docs.traefik.io/master/routing/routers/#certresolver
+        certResolver: letsencrypt
+
+  middlewares:
+    csrf:
+      # https://docs.traefik.io/master/middlewares/headers/#hostsproxyheaders
+      # https://docs.djangoproject.com/en/dev/ref/csrf/#ajax
+      headers:
+        hostsProxyHeaders: ["X-CSRFToken"]
+    test-compress:
+      compress:
+        excludedContentTypes:
+          - text/event-stream
+
+  services:
+    frontend:
+      loadBalancer:
+        servers:
+          - url: http://frontend:3000
+
+providers:
+  # https://docs.traefik.io/master/providers/file/
+  file:
+    filename: /etc/traefik/traefik.yml
+    watch: true
+labels:
+  - "traefik.http.routers.web-secure-router.middlewares=traefik-compress"
+  - "traefik.http.middlewares.traefik-compress.compress=true"
