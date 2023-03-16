@@ -260,6 +260,7 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
     return messages?.map((msg, id) => {
       return (
         <ChatMessage
+          key={msg?.id || "test"}
           id={msg?.id || "test"}
           content={msg?.content}
           role={msg?.role}
@@ -302,7 +303,7 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
         <ScrollArea
           p={0}
           scrollbarSize={1}
-          sx={{ height: "84vh", paddingBottom: "1rem" }}
+          sx={{ height: "80vh", paddingBottom: "1rem" }}
         >
           <Container
             sx={(theme) => ({

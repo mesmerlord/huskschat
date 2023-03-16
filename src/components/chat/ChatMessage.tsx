@@ -99,154 +99,177 @@ const ChatMessage = ({
         })}
         shadow="sm"
       >
-        <Group align="flex-start" spacing={10} noWrap>
-          <Stack spacing={2}>
-            <Avatar size="sm">{role === "assistant" && <IconRobot />}</Avatar>
+        <Group position="left" align="flex-start" spacing={10} noWrap>
+          <Stack spacing={2} padding={1}>
+            <Avatar
+              size="sm"
+              sx={(theme) => ({
+                [theme.fn.smallerThan("xs")]: {
+                  width: "17px",
+                  height: "17px",
+                  svg: {
+                    width: "17px",
+                    height: "17px",
+                  },
+                },
+              })}
+            >
+              {role === "assistant" && <IconRobot />}
+            </Avatar>
             {role === "assistant" && (
               <Title
                 align="center"
                 order={6}
                 sx={(theme) => ({
                   color: darkMode === "light" ? "black" : "white",
+                  [theme.fn.smallerThan("xs")]: {
+                    fontSize: "0.6rem",
+                  },
                 })}
               >
                 AI
               </Title>
             )}
             {role === "user" && (
-              <Title align="center" order={6} color="white">
+              <Title
+                align="center"
+                order={6}
+                color="white"
+                sx={(theme) => ({
+                  [theme.fn.smallerThan("xs")]: {
+                    fontSize: "0.6rem",
+                  },
+                })}
+              >
                 YOU
               </Title>
             )}
           </Stack>
-          <Stack
-            p={0}
-            spacing={2}
-            sx={{ maxWidth: "80%" }}
-            align="flex-end"
-          ></Stack>
-          <Menu shadow="md" width={200} ml="auto" withinPortal>
-            <Menu.Target>
-              <ActionIcon>
-                <IconDotsVertical />
-              </ActionIcon>
-            </Menu.Target>
+          <Container
+            ref={documentRef}
+            sx={(theme) => ({
+              [theme.fn.smallerThan("md")]: {
+                padding: "0.1rem",
+              },
+            })}
+            ml={0}
+            mr="auto"
+          >
+            <ScrollArea>
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={{
+                  p({ node, children, ...props }) {
+                    return (
+                      <Text
+                        sx={(theme) => ({
+                          color:
+                            darkMode === "light" && role === "assistant"
+                              ? "black"
+                              : "white",
+                        })}
+                      >
+                        {children}
+                      </Text>
+                    );
+                  },
 
-            <Menu.Dropdown>
-              <Menu.Label>Options</Menu.Label>
-              <Menu.Item
-                onClick={handleGeneratePdf}
-                icon={<IconBookDownload size={14} />}
+                  code({ node, inline, className, children, ...props }) {
+                    const match = /language-(\w+)/.exec(className || "");
+                    return !inline && match ? (
+                      <Prism
+                        sx={(theme) => ({
+                          [theme.fn.smallerThan("xs")]: {
+                            pre: {
+                              overflowWrap: "break-word",
+                            },
+                            div: {
+                              maxWidth: "100%",
+                            },
+                            overflow: "scroll",
+                            span: {
+                              fontSize: "0.7rem !important",
+                            },
+                          },
+                        })}
+                        language={match}
+                      >
+                        {children[0]}
+                      </Prism>
+                    ) : (
+                      <code>"{children}"</code>
+                    );
+                  },
+                  table({ node, children, ...props }) {
+                    return (
+                      <Table
+                        fontSize={16}
+                        striped
+                        highlightOnHover
+                        withBorder
+                        withColumnBorders
+                        sx={(theme) => ({
+                          // tableLayout: "fixed",
+                          textAlign: "left",
+                          td: {
+                            width: "5px",
+                          },
+                          [theme.fn.smallerThan("xs")]: {
+                            width: "33%",
+
+                            td: {
+                              fontSize: "0.7rem !important",
+                              padding: "0.5rem !important",
+                            },
+                            th: {
+                              padding: "0.2rem !important",
+                              fontSize: "0.7rem !important",
+                            },
+                          },
+                          [theme.fn.smallerThan("sm")]: {
+                            width: "50%",
+
+                            td: {
+                              fontSize: "0.7rem !important",
+                              padding: "0.5rem !important",
+                            },
+                            th: {
+                              padding: "0.2rem !important",
+                              fontSize: "0.7rem !important",
+                            },
+                          },
+                        })}
+                      >
+                        {children}
+                      </Table>
+                    );
+                  },
+                }}
               >
-                Download As PDF
-              </Menu.Item>
-            </Menu.Dropdown>
-          </Menu>
+                {content}
+              </ReactMarkdown>
+            </ScrollArea>
+          </Container>
+          <Stack p={0} spacing={2} sx={{ maxWidth: "80%" }} align="flex-end">
+            <Menu shadow="md" width={200} ml="auto" withinPortal>
+              <Menu.Target>
+                <ActionIcon>
+                  <IconDotsVertical />
+                </ActionIcon>
+              </Menu.Target>
+
+              <Menu.Dropdown>
+                <Menu.Label>Options</Menu.Label>
+                <Menu.Item
+                  onClick={handleGeneratePdf}
+                  icon={<IconBookDownload size={14} />}
+                >
+                  Download As PDF
+                </Menu.Item>
+              </Menu.Dropdown>
+            </Menu>
+          </Stack>
         </Group>
-
-        <Container
-          ref={documentRef}
-          sx={(theme) => ({
-            [theme.fn.smallerThan("md")]: {
-              padding: "0.1rem",
-            },
-          })}
-        >
-          <ScrollArea>
-            <ReactMarkdown
-              remarkPlugins={[remarkGfm]}
-              components={{
-                p({ node, children, ...props }) {
-                  return (
-                    <Text
-                      sx={(theme) => ({
-                        color:
-                          darkMode === "light" && role === "assistant"
-                            ? "black"
-                            : "white",
-                      })}
-                    >
-                      {children}
-                    </Text>
-                  );
-                },
-
-                code({ node, inline, className, children, ...props }) {
-                  const match = /language-(\w+)/.exec(className || "");
-                  return !inline && match ? (
-                    <Prism
-                      sx={(theme) => ({
-                        [theme.fn.smallerThan("xs")]: {
-                          pre: {
-                            overflowWrap: "break-word",
-                          },
-                          div: {
-                            maxWidth: "100%",
-                          },
-                          overflow: "scroll",
-                          span: {
-                            fontSize: "0.7rem !important",
-                          },
-                        },
-                      })}
-                      language={match}
-                    >
-                      {children[0]}
-                    </Prism>
-                  ) : (
-                    <code>"{children}"</code>
-                  );
-                },
-                table({ node, children, ...props }) {
-                  return (
-                    <Table
-                      fontSize={16}
-                      striped
-                      highlightOnHover
-                      withBorder
-                      withColumnBorders
-                      sx={(theme) => ({
-                        // tableLayout: "fixed",
-                        textAlign: "left",
-                        td: {
-                          width: "5px",
-                        },
-                        [theme.fn.smallerThan("xs")]: {
-                          width: "33%",
-
-                          td: {
-                            fontSize: "0.7rem !important",
-                            padding: "0.5rem !important",
-                          },
-                          th: {
-                            padding: "0.2rem !important",
-                            fontSize: "0.7rem !important",
-                          },
-                        },
-                        [theme.fn.smallerThan("sm")]: {
-                          width: "50%",
-
-                          td: {
-                            fontSize: "0.7rem !important",
-                            padding: "0.5rem !important",
-                          },
-                          th: {
-                            padding: "0.2rem !important",
-                            fontSize: "0.7rem !important",
-                          },
-                        },
-                      })}
-                    >
-                      {children}
-                    </Table>
-                  );
-                },
-              }}
-            >
-              {content}
-            </ReactMarkdown>
-          </ScrollArea>
-        </Container>
       </Card>
       {lastMessage && role === "assistant" && (
         <Group position="center">
