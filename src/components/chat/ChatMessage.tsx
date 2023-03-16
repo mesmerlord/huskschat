@@ -146,6 +146,21 @@ const ChatMessage = ({ id, content, role }: ChatMessageProps) => {
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               components={{
+                p({ node, children, ...props }) {
+                  return (
+                    <Text
+                      sx={(theme) => ({
+                        color:
+                          darkMode === "light" && role === "assistant"
+                            ? "black"
+                            : "white",
+                      })}
+                    >
+                      {children}
+                    </Text>
+                  );
+                },
+
                 code({ node, inline, className, children, ...props }) {
                   const match = /language-(\w+)/.exec(className || "");
                   return !inline && match ? (
