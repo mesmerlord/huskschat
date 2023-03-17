@@ -39,4 +39,6 @@ next-env.d.ts
 .env.postgres
 
 src/embeddings/*
-uploads/
+!src/embeddings/.gitkeep
+uploads/*
+!uploads/.gitkeep
