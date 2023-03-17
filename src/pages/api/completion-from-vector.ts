@@ -25,7 +25,9 @@ export default async function openaiHandler(
         openAIApiKey: apiKey,
         modelName: modelName,
       });
-      const chain = ChatVectorDBQAChain.fromLLM(chatModel, loadedVectorStore);
+      const chain = ChatVectorDBQAChain.fromLLM(chatModel, loadedVectorStore, {
+        k: 2,
+      });
 
       const newRes = await chain.call({
         question: messages[messages.length - 1]?.content,
