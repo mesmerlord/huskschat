@@ -5,7 +5,10 @@ RUN apk add --no-cache libc6-compat
 RUN apk add --no-cache \
         libressl-dev \
         musl-dev \
-        libffi-dev
+        libffi-dev \
+        python \
+        make \
+        g++
 WORKDIR /app
 # COPY ./frontend/prisma ./prisma
 COPY ./package.json ./yarn.lock ./
