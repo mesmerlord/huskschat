@@ -29,8 +29,8 @@ export const parseForm = async (
     }
 
     const form = formidable({
-      maxFiles: 2,
-      maxFileSize: 1024 * 1024, // 1mb
+      maxFiles: 1,
+      maxFileSize: 1024 * 1024 * 2, // 1mb
       uploadDir,
       filename: (_name, _ext, part) => {
         const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
