@@ -7,7 +7,9 @@ RUN apk add --update --no-cache \
         musl-dev \
         libffi-dev \
         python3 \
-        make
+        make \
+        g++
+
 WORKDIR /app
 # COPY ./frontend/prisma ./prisma
 COPY ./package.json ./yarn.lock ./
