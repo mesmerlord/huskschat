@@ -40,7 +40,9 @@ export const parseForm = async (
         return filename;
       },
       filter: (part) => {
-        return part.mimetype?.includes("pdf") || false;
+        return (
+          ["pdf", "text"].some((val) => part.mimetype?.includes(val)) || false
+        );
       },
     });
 
