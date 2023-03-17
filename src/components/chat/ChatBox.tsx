@@ -8,15 +8,23 @@ import {
   Grid,
   Textarea,
 } from "@mantine/core";
-import { IconSend } from "@tabler/icons-react";
+import { IconBookUpload, IconSend } from "@tabler/icons-react";
 
 interface ChatBoxProps {
   onMessageSubmit: () => void;
   message: string;
   setMessage: (value: string) => void;
+  setShowDropBox: (value: boolean) => void;
+  showUploadButton: boolean;
 }
 
-const ChatBox = ({ onMessageSubmit, message, setMessage }: ChatBoxProps) => {
+const ChatBox = ({
+  onMessageSubmit,
+  message,
+  setMessage,
+  setShowDropBox,
+  showUploadButton,
+}: ChatBoxProps) => {
   return (
     <form
       onSubmit={(e) => {
@@ -33,7 +41,7 @@ const ChatBox = ({ onMessageSubmit, message, setMessage }: ChatBoxProps) => {
       <Container>
         <Box sx={{ width: "100%", marginLeft: "auto", marginRight: "auto" }}>
           <Grid grow>
-            <Col span={10}>
+            <Col span={9}>
               <Textarea
                 sx={{ width: "99%" }}
                 minRows={1}
@@ -45,8 +53,8 @@ const ChatBox = ({ onMessageSubmit, message, setMessage }: ChatBoxProps) => {
                 size="lg"
               />
             </Col>
-            <Col span={1}>
-              <Flex justify="center" align="flex-end" sx={{ height: "100%" }}>
+            <Col span={3}>
+              <Flex justify="center" align="flex-start" sx={{ height: "100%" }}>
                 <Button
                   type="submit"
                   leftIcon={
@@ -54,9 +62,22 @@ const ChatBox = ({ onMessageSubmit, message, setMessage }: ChatBoxProps) => {
                       <IconSend color="white" />
                     </ActionIcon>
                   }
+                  sx={{ marginRight: "0.5rem" }}
                 >
                   Send
-                </Button>
+                </Button>{" "}
+                {showUploadButton && (
+                  <Button
+                    onClick={() => setShowDropBox((value) => !value)}
+                    leftIcon={
+                      <ActionIcon variant="transparent" size="sm">
+                        <IconBookUpload />
+                      </ActionIcon>
+                    }
+                  >
+                    Upload
+                  </Button>
+                )}
               </Flex>
             </Col>
           </Grid>

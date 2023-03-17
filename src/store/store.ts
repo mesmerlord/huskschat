@@ -28,6 +28,7 @@ export type ChatRoomType = {
   messages: ChatMessageType[];
   createdAt: Date;
   tokensUsed: number;
+  documentId: string | null;
 };
 
 export const IDBStorage = {
@@ -58,6 +59,7 @@ export type storeState = {
   darkMode: string;
   messageRoomList: ChatRoomType[];
   currentRoom: string | null;
+  documentId: string | null;
 };
 
 const getDefaultInitialState: storeState = () => ({
@@ -124,6 +126,37 @@ export const getServerCompletion = async (messages: ChatMessageType[]) => {
   return response;
 };
 
+export const getServerDocumentCompletion = async (
+  messages: ChatMessageType[],
+  documentId
+) => {
+  const newMessages = messages?.map((msg) => {
+    if (Boolean(msg?.content)) {
+      return {
+        content: msg.content,
+        role: msg.role,
+      };
+    }
+  });
+
+  const response = await fetch("/api/completion-from-vector", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      messages: newMessages,
+      documentId: documentId,
+    }),
+  })
+    .then((res) => res)
+    .catch((err) => {
+      console.error("Error with OpenAI request:", err);
+      return err;
+    });
+  return response;
+};
+
 export const initializeStore = (preloadedState = {}) => {
   return create(
     persist(
@@ -145,6 +178,7 @@ export const initializeStore = (preloadedState = {}) => {
         },
         setApiKey: (apiKey) => set(() => ({ apiKey })),
         setUserPlan: (userPlan) => set(() => ({ userPlan })),
+
         deleteRoom: (roomId) => {
           set(
             produce((draft) => {
@@ -178,7 +212,22 @@ export const initializeStore = (preloadedState = {}) => {
             })
           );
         },
-
+        addRoom: (roomId, values: ChatRoomType) => {
+          set(
+            produce((draft) => {
+              draft.messageRoomList.push({
+                id: roomId,
+                name: roomId,
+                messages: [],
+                createdAt: new Date(),
+                tokensUsed: 0,
+                ...values,
+              });
+              draft.currentRoomId = roomId;
+            })
+          );
+          console.log("addRoom", roomId, get().messageRoomList);
+        },
         addRoomMessage: (
           roomId,
           message,
@@ -195,19 +244,17 @@ export const initializeStore = (preloadedState = {}) => {
           if (!existingRoom) {
             const messagesToAdd =
               systemPrompt === null ? [message] : [systemPrompt, message];
-
-            set((state) => ({
-              messageRoomList: [
-                ...state.messageRoomList,
-                {
+            set(
+              produce((draft) => {
+                draft.messageRoomList.push({
                   id: roomId,
                   name: roomId,
                   messages: [...messagesToAdd],
                   tokensUsed: 0,
-                },
-              ],
-              currentRoomId: roomId,
-            }));
+                });
+                draft.currentRoomId = roomId;
+              })
+            );
           } else {
             set(
               produce((draft) => {

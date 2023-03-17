@@ -9,7 +9,6 @@ import {
   Text,
   Title,
 } from "@mantine/core";
-import { useScrollIntoView } from "@mantine/hooks";
 import { useEffect, useMemo, useRef, useState } from "react";
 import ChatBox from "./ChatBox";
 import ChatMessage from "./ChatMessage";
@@ -20,10 +19,14 @@ import {
   getOpenAiCompletion,
   useStore,
   getServerCompletion,
+  getServerDocumentCompletion,
 } from "@/store/store";
 import ChangeApiModal from "../common/ChangeApiModal";
 import { showNotification } from "@mantine/notifications";
 import { FeaturesTitle } from "../common/Features";
+import Dropfile from "../common/DropFile";
+import { getPrompt } from "../lib/open-ai-prompts";
+import DocumentChatMessage from "./DocumentChatMessage";
 
 interface ChatRoomProps {
   roomId: string;
@@ -31,17 +34,17 @@ interface ChatRoomProps {
 
 const ChatRoom = ({ roomId }: ChatRoomProps) => {
   const dummy = useRef<HTMLDivElement>(null);
-  const { scrollIntoView, targetRef } = useScrollIntoView<HTMLDivElement>({
-    offset: 60,
-  });
   const [message, setMessage] = useState("");
 
   const [openAiLoading, setOpenAiLoading] = useState(false);
   const [openAiReloading, setOpenAiReloading] = useState(false);
   const [apiKeyModal, setApiKeyModal] = useState(false);
+  const [showDropBox, setShowDropBox] = useState(false);
+  const [showUploadButton, setShowUploadButton] = useState(true);
 
   const messageRoomList = useStore((state) => state.messageRoomList);
   const addRoomMessage = useStore((state) => state.addRoomMessage);
+  const addRoom = useStore((state) => state.addRoom);
   const replaceRoomMessage = useStore((state) => state.replaceRoomMessage);
   const setRoomName = useStore((state) => state.setRoomName);
   const apiKey = useStore((state) => state.apiKey);
@@ -59,20 +62,49 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
         messages: [],
       }
     );
-    console.log(room, "room");
     dummy.current?.scrollIntoView({ behavior: "smooth" });
   }, [roomId, messageRoomList]);
 
   useEffect(() => {
     setMessage("");
-  }, [roomId, messageRoomList]);
+  }, [roomId]);
 
   const switchResponseForPlan = async (
     plan: string,
-    messages: ChatMessageType[]
+    messages: ChatMessageType[],
+    type: "completion" | "documentCompletion" = "completion"
   ) => {
     switch (plan) {
       case "free":
+        if (room?.documentId && type === "documentCompletion") {
+          const completion = await getServerDocumentCompletion(
+            messages,
+            room?.documentId
+          ).then((res) => {
+            if (res?.status === 200) {
+              setOpenAiLoading(false);
+              setOpenAiReloading(false);
+              const resJson = res.json().then((data) => {
+                return data;
+              });
+              return resJson;
+            } else {
+              console.log(res);
+              const resJson = res.json().then((data) => {
+                showNotification({
+                  title: "Error",
+                  message:
+                    data?.error?.message ||
+                    "Error communicating with OpenAI, please try again later",
+                  color: "red",
+                  icon: <ActionIcon color="red" />,
+                });
+                return null;
+              });
+            }
+          });
+          return completion;
+        }
         const freeCompletion = await getServerCompletion(messages)
           .then((res) => {
             if (res?.status === 200) {
@@ -104,6 +136,15 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
           });
         return freeCompletion;
       case "hosted":
+        if (room?.documentId !== "") {
+          showNotification({
+            title: "Error",
+            message: "This feature is only available on the hosted plan",
+            color: "red",
+            icon: <ActionIcon color="red" />,
+          });
+          return null;
+        }
         const openAiCompletion = getOpenAiCompletion(messages, apiKey)
           .then((res) => {
             setOpenAiLoading(false);
@@ -135,27 +176,18 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
       setApiKeyModal(true);
       return;
     }
-    const userPrompt = {
-      id: crypto.randomUUID(),
-      role: ChatCompletionRequestMessageRoleEnum.USER,
-      content: message,
-    };
+    const userPrompt = getPrompt({ type: "user", message });
     if (!roomId || !room?.messages) {
       const newRoomId = crypto.randomUUID();
-      const systemPrompt = {
-        id: crypto.randomUUID(),
-        role: ChatCompletionRequestMessageRoleEnum.SYSTEM,
-        content:
-          "You are an AI model trained by OpenAI, be as concise as possible in your responses.",
-      };
-
+      const systemPrompt = getPrompt({ type: "system", message: "" });
       addRoomMessage(newRoomId, userPrompt, 0, systemPrompt);
       setMessage("");
       setOpenAiLoading(true);
-      const completion = await switchResponseForPlan(userPlan, [
-        systemPrompt,
-        userPrompt,
-      ]);
+      const completion = await switchResponseForPlan(
+        userPlan,
+        [systemPrompt, userPrompt],
+        "documentCompletion"
+      );
 
       const newMessage = completion?.data?.choices[0]?.message;
       if (completion && completion?.data?.choices?.length > 0 && newMessage) {
@@ -170,22 +202,23 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
           name: userPrompt.content,
           createdAt: new Date(),
           tokensUsed: completion?.data?.usage?.total_tokens ?? 0,
+          documentId: "",
         });
         addRoomMessage(
           newRoomId,
           assistantPrompt,
           completion?.data?.usage?.total_tokens ?? 0
         );
-        const newTitlePrompt = {
-          id: crypto.randomUUID(),
-          role: ChatCompletionRequestMessageRoleEnum.USER,
-          content:
-            "Answer with a upto 3 word title for this chat, only the title.",
-        };
-        const titleCompletion = await switchResponseForPlan(userPlan, [
-          systemPrompt,
-          userPrompt,
-        ]);
+        const newTitlePrompt = getPrompt({
+          type: "title",
+          message: "",
+        });
+
+        const titleCompletion = await switchResponseForPlan(
+          userPlan,
+          [systemPrompt, userPrompt, newTitlePrompt],
+          "completion"
+        );
         const newTitleMessage = titleCompletion?.data?.choices[0]?.message;
         if (
           titleCompletion &&
@@ -200,10 +233,11 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
       addRoomMessage(roomId, userPrompt);
 
       setOpenAiLoading(true);
-      const completion = await switchResponseForPlan(userPlan, [
-        ...room.messages,
-        userPrompt,
-      ]);
+      const completion = await switchResponseForPlan(
+        userPlan,
+        [...room.messages, userPrompt],
+        "documentCompletion"
+      );
 
       setOpenAiLoading(false);
       if (completion && completion?.data?.choices?.length > 0) {
@@ -223,15 +257,25 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
     }
   };
 
+  const onFileUpload = async (res) => {
+    const systemPrompt = getPrompt({ type: "system", message: "" });
+    addRoom((roomId = crypto.randomUUID()), {
+      documentId: res?.data?.id,
+      messages: [systemPrompt],
+    });
+  };
+
   const regenerateMessage = async (messageId: string) => {
     setOpenAiReloading(true);
 
     const previousMessages = room.messages.filter(
       (msg) => msg.id !== messageId
     );
-    const completion = await switchResponseForPlan(userPlan, [
-      ...previousMessages,
-    ]);
+    const completion = await switchResponseForPlan(
+      userPlan,
+      [...previousMessages],
+      "documentCompletion"
+    );
     setOpenAiReloading(false);
 
     if (completion && completion?.data?.choices?.length > 0) {
@@ -312,9 +356,13 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
               },
             })}
           >
-            <Stack spacing={2}>{newMessages}</Stack>
+            <Stack spacing={2}>
+              {room?.documentId && (
+                <DocumentChatMessage message="You have a document attached to this chat." />
+              )}
+              {newMessages}
+            </Stack>
 
-            <div ref={targetRef}></div>
             <div ref={dummy}></div>
           </Container>
         </ScrollArea>
@@ -332,10 +380,13 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
             </Paper>
           </Group>
         )}
+        {showDropBox && <Dropfile onFileUpload={onFileUpload} />}
         <ChatBox
           onMessageSubmit={onMessageSubmit}
           message={message}
           setMessage={setMessage}
+          setShowDropBox={setShowDropBox}
+          showUploadButton={showUploadButton}
         />
       </Stack>
     </>

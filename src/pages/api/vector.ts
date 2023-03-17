@@ -1,11 +1,6 @@
 import { promises as fs } from "fs";
-import formidable from "formidable";
-const { ChromaClient } = require("chromadb");
 import { PDFLoader } from "langchain/document_loaders";
 import { parseForm } from "@/components/lib/parse-form";
-import { PineconeClient } from "@pinecone-database/pinecone";
-import { OpenAI } from "langchain";
-import { ChatVectorDBQAChain } from "langchain/chains";
 import { HNSWLib } from "langchain/vectorstores";
 import { OpenAIEmbeddings } from "langchain/embeddings";
 

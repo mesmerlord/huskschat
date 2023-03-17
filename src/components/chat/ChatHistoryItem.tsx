@@ -123,7 +123,7 @@ const ChatHistoryItem = ({ chatRoom }) => {
           </Group>
 
           <Text size="xs" lineClamp={1}>
-            {chatRoom?.messages[1].content}
+            {chatRoom?.messages[1]?.content}
           </Text>
         </Stack>
       </Card>
