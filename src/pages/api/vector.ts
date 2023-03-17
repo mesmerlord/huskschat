@@ -1,8 +1,8 @@
 import { promises as fs } from "fs";
-import { PDFLoader } from "langchain/document_loaders";
 import { parseForm } from "@/components/lib/parse-form";
 import { HNSWLib } from "langchain/vectorstores";
 import { OpenAIEmbeddings } from "langchain/embeddings";
+import { PDFLoader } from "@/components/lib/parse-document";
 
 export const config = {
   api: {
