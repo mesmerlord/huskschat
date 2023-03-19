@@ -1,7 +1,7 @@
 import { ChatCompletionRequestMessageRoleEnum } from "@/store/store";
 
 type GetPromptProps = {
-  type: "user" | "assistant" | "system" | "title";
+  type: "user" | "assistant" | "system" | "title" | "summary";
   message: string;
 };
 
@@ -39,6 +39,15 @@ export const getPrompt = ({ type, message }: GetPromptProps) => {
           "Answer with a upto 3 word title for this chat, only the title.",
       };
       return titlePrompt;
+    }
+    case "summary": {
+      const tooLongPrompt = {
+        id: crypto.randomUUID(),
+        role: ChatCompletionRequestMessageRoleEnum.USER,
+        content:
+          "Provide a summary of this entire conversation in less than 1000 words while still holding most of the information.",
+      };
+      return tooLongPrompt;
     }
     default: {
       const defaultPrompt = {

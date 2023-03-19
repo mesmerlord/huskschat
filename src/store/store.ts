@@ -20,6 +20,8 @@ export type ChatMessageType = {
   id: string;
   content: string | null;
   role: typeof ChatCompletionRequestMessageRoleEnum[keyof typeof ChatCompletionRequestMessageRoleEnum];
+  cumalativeTokensUsed?: number;
+  isSummary?: boolean;
 };
 
 export type ChatRoomType = {

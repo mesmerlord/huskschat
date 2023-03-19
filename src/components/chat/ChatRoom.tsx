@@ -195,6 +195,9 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
           id: completion?.data?.id,
           role: ChatCompletionRequestMessageRoleEnum.ASSISTANT,
           content: newMessage.content,
+          cumalativeTokensUsed:
+            (room?.tokensUsed || 0) +
+            (completion?.data?.usage?.total_tokens || 0),
         };
         setRoom({
           id: newRoomId,
@@ -231,20 +234,100 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
     } else {
       setMessage("");
       addRoomMessage(roomId, userPrompt);
-
       setOpenAiLoading(true);
+
+      let newRoomMessages = room?.messages;
+
+      if (room?.tokensUsed && room?.tokensUsed > 3000) {
+        const reversedMessages = room?.messages?.slice()?.reverse();
+        const lastSummaryIndex = reversedMessages?.findIndex(
+          (msg) => msg.isSummary
+        );
+        if (lastSummaryIndex && lastSummaryIndex > 0) {
+          const newMessages = reversedMessages?.slice(0, lastSummaryIndex + 1);
+          newRoomMessages = newMessages?.slice()?.reverse();
+          console.log(newMessages, newRoomMessages);
+
+          const lastRooomMessage = newRoomMessages?.slice(-1)[0];
+          if (
+            lastRooomMessage &&
+            (lastRooomMessage?.cumalativeTokensUsed || 0) > 3000
+          ) {
+            const summaryPrompt = getPrompt({ type: "summary", message: "" });
+            const summaryCompletion = await switchResponseForPlan(
+              userPlan,
+              [...newRoomMessages, summaryPrompt],
+              "documentCompletion"
+            );
+            if (
+              summaryCompletion &&
+              summaryCompletion?.data?.choices?.length > 0
+            ) {
+              const newMessage = summaryCompletion?.data?.choices[0]?.message;
+
+              const assistantPrompt = {
+                id: summaryCompletion?.data?.id,
+                cumalativeTokensUsed:
+                  0 + (summaryCompletion?.data?.usage?.completion_tokens || 0),
+                isSummary: true,
+                ...newMessage,
+              };
+
+              addRoomMessage(
+                roomId,
+                assistantPrompt,
+                summaryCompletion?.data?.usage?.total_tokens ?? 0
+              );
+              newRoomMessages = [...newRoomMessages, assistantPrompt];
+            }
+          }
+        } else {
+          const summaryPrompt = getPrompt({ type: "summary", message: "" });
+          const summaryCompletion = await switchResponseForPlan(
+            userPlan,
+            [...newRoomMessages, summaryPrompt],
+            "documentCompletion"
+          );
+          if (
+            summaryCompletion &&
+            summaryCompletion?.data?.choices?.length > 0
+          ) {
+            const newMessage = summaryCompletion?.data?.choices[0]?.message;
+
+            const assistantPrompt = {
+              id: summaryCompletion?.data?.id,
+              cumalativeTokensUsed:
+                0 + (summaryCompletion?.data?.usage?.total_tokens || 0),
+              isSummary: true,
+
+              ...newMessage,
+            };
+
+            addRoomMessage(
+              roomId,
+              assistantPrompt,
+              summaryCompletion?.data?.usage?.completion_tokens ?? 0
+            );
+            const systemPrompt = getPrompt({ type: "system", message: "" });
+            newRoomMessages = [systemPrompt, assistantPrompt];
+          }
+        }
+      }
       const completion = await switchResponseForPlan(
         userPlan,
-        [...room.messages, userPrompt],
+        [...newRoomMessages, userPrompt],
         "documentCompletion"
       );
 
       setOpenAiLoading(false);
       if (completion && completion?.data?.choices?.length > 0) {
         const newMessage = completion?.data?.choices[0]?.message;
-
+        const lastRooomMessage = newRoomMessages?.slice(-1)[0];
         const assistantPrompt = {
           id: completion?.data?.id,
+          cumalativeTokensUsed:
+            (lastRooomMessage?.cumalativeTokensUsed || 0) +
+            (completion?.data?.usage?.completion_tokens || 0),
           ...newMessage,
         };
 
@@ -310,6 +393,7 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
           role={msg?.role}
           lastMessage={id === messages.length - 1 && !openAiReloading}
           regenerateMessage={regenerateMessage}
+          isSummary={msg?.isSummary}
         />
       );
     });

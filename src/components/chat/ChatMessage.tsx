@@ -33,6 +33,7 @@ interface ChatMessageProps {
   role: typeof ChatCompletionRequestMessageRoleEnum[keyof typeof ChatCompletionRequestMessageRoleEnum];
   lastMessage: boolean;
   regenerateMessage: (messageId) => void;
+  isSummary?: boolean;
 }
 const ChatMessage = ({
   id,
@@ -40,6 +41,7 @@ const ChatMessage = ({
   role,
   lastMessage,
   regenerateMessage,
+  isSummary,
 }: ChatMessageProps) => {
   const darkMode = useStore((state) => state.darkMode);
   const documentRef = useRef(null);
@@ -155,6 +157,16 @@ const ChatMessage = ({
             ml={0}
             mr="auto"
           >
+            {isSummary && (
+              <Title
+                order={4}
+                align="center"
+                my={8}
+                sx={{ fontWeight: 800, textDecoration: "underline" }}
+              >
+                Summarizing conversation to go over the 4000 token limit
+              </Title>
+            )}
             <ScrollArea>
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
