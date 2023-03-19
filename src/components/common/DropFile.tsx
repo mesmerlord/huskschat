@@ -33,7 +33,6 @@ const Dropfile = ({ onFileUpload }: DropFileProps) => {
       }}
       onReject={(files) => console.log("rejected files", files)}
       maxSize={3 * 1024 ** 2}
-      accept={PDF_MIME_TYPE}
     >
       <Group position="center">
         <Text size="xl">Drag and drop your PDF file here</Text>

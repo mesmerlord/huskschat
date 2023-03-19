@@ -6,18 +6,27 @@ import {
   Card,
   Flex,
   Group,
+  Highlight,
   Stack,
   Text,
   TextInput,
 } from "@mantine/core";
 import { IconEdit, IconTrash } from "@tabler/icons-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 type ConfirmType = {
   name: "delete" | "edit" | "none";
 };
 
-const ChatHistoryItem = ({ chatRoom }) => {
+interface ChatHistoryItemProps {
+  chatRoom: any;
+  highlightedText: string;
+}
+
+const ChatHistoryItem = ({
+  chatRoom,
+  highlightedText,
+}: ChatHistoryItemProps) => {
   const setCurrentRoomId = useStore((state) => state.setCurrentRoomId);
   const currentRoomId = useStore((state) => state.currentRoomId);
   const setRoomName = useStore((state) => state.setRoomName);
@@ -26,6 +35,29 @@ const ChatHistoryItem = ({ chatRoom }) => {
   const [currentRoomName, setCurrentRoomName] = useState(chatRoom.name);
 
   const [showConfirm, setShowConfirm] = useState<ConfirmType>({ name: "none" });
+
+  const messageHighlighted = useMemo(() => {
+    if (highlightedText) {
+      try {
+        const messageContent = chatRoom?.messages[1]?.content;
+        const highlightedIndex =
+          highlightedText?.split(" ")?.length > 1
+            ? messageContent?.indexOf(highlightedText)
+            : messageContent?.indexOf(highlightedText?.split(" ")[0]);
+        if (!highlightedIndex) {
+          return chatRoom?.messages[1]?.content;
+        }
+        const highlightedMessage = messageContent?.substring(
+          Math.max(0, highlightedIndex - 10)
+        );
+        return highlightedMessage;
+      } catch (e) {
+        console.log(e);
+        return null;
+      }
+    }
+    return null;
+  }, [chatRoom, highlightedText]);
 
   const confirmDelete = () => {
     setShowConfirm({ name: "delete" });
@@ -103,7 +135,15 @@ const ChatHistoryItem = ({ chatRoom }) => {
                 </ActionIcon>
               </Group>
             ) : (
-              <Text lineClamp={1}>{chatRoom.name}</Text>
+              <>
+                {highlightedText ? (
+                  <Highlight highlight={highlightedText} lineClamp={1}>
+                    {chatRoom.name}
+                  </Highlight>
+                ) : (
+                  <Text lineClamp={1}>{chatRoom.name}</Text>
+                )}
+              </>
             )}
             <Box>
               {showConfirm.name === "delete" ? (
@@ -121,10 +161,15 @@ const ChatHistoryItem = ({ chatRoom }) => {
               )}
             </Box>
           </Group>
-
-          <Text size="xs" lineClamp={1}>
-            {chatRoom?.messages[1]?.content}
-          </Text>
+          {messageHighlighted ? (
+            <Highlight highlight={highlightedText} lineClamp={1} size="xs">
+              {messageHighlighted}
+            </Highlight>
+          ) : (
+            <Text size="xs" lineClamp={1}>
+              {chatRoom?.messages[1]?.content}
+            </Text>
+          )}
         </Stack>
       </Card>
     </Box>

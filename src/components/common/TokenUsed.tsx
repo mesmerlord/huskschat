@@ -32,8 +32,11 @@ const TokenUsed = () => {
           })}
           align="center"
         >
-          {totalMessages} Messages ( ~ $
-          {Math.round((totalTokensUsed / 1000) * 0.002 * 1000000) / 1000000})
+          {totalMessages} Messages (
+          {`~\$${
+            Math.round((totalTokensUsed / 1000) * 0.002 * 1000000) / 1000000
+          }`}
+          )
         </Title>
       </Stack>
     </>

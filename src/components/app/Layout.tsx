@@ -20,11 +20,11 @@ import {
   Drawer,
 } from "@mantine/core";
 import PreviousChats from "../chat/PreviousChats";
-import NewChatButton from "../chat/NewChatButton";
 import DarkModeSwitch from "../common/DarkModeSwitch";
 import ChangeApiButton from "../common/ChangeApiButton";
 import TokenUsed from "../common/TokenUsed";
-import { useDisclosure } from "@mantine/hooks";
+import { useDebouncedState, useDisclosure } from "@mantine/hooks";
+import TopSectionChat from "../chat/TopSectionChat";
 
 interface LayoutProps {
   component: any;
@@ -76,6 +76,8 @@ const Layout = ({ component, children }: LayoutProps) => {
   const getLayout = component.getLayout || ((page) => page);
   const theme = useMantineTheme();
 
+  const [search, setSearch] = useDebouncedState("", 200);
+
   return getLayout(
     <>
       <Seo
@@ -102,11 +104,11 @@ const Layout = ({ component, children }: LayoutProps) => {
               width={{ base: 300, sm: 300, lg: 300, xs: 150 }}
             >
               <Navbar.Section>
-                <NewChatButton />
+                <TopSectionChat setSearch={setSearch} />
               </Navbar.Section>
               <Navbar.Section mt="md" grow>
                 <Box sx={{ height: "300px" }}>
-                  <PreviousChats />
+                  <PreviousChats search={search} />
                 </Box>
               </Navbar.Section>
               <Navbar.Section>
@@ -167,9 +169,10 @@ const Layout = ({ component, children }: LayoutProps) => {
             size="75%"
           >
             <Stack>
-              <NewChatButton />
-              <Box sx={{ height: "400px" }}>
-                <PreviousChats />
+              <TopSectionChat setSearch={setSearch} />
+
+              <Box sx={{ height: "500px" }}>
+                <PreviousChats search={search} />
               </Box>
               <Stack>
                 <ChangeApiButton />

@@ -31,7 +31,7 @@ export default async function openaiHandler(
 
       const newRes = await chain.call({
         question: messages[messages.length - 1]?.content,
-        chat_history: messages?.slice(-1)?.map((message) => message.content),
+        chat_history: messages?.splice(-1)?.map((message) => message.content),
       });
       const prompt_tokens = messages?.reduce((acc, message) => {
         return acc + message?.content?.split(" ").length;
