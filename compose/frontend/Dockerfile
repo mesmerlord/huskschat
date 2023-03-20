@@ -11,7 +11,7 @@ RUN apk add --update --no-cache \
         g++
 
 WORKDIR /app
-# COPY ./frontend/prisma ./prisma
+COPY ./frontend/prisma ./prisma
 COPY ./package.json ./yarn.lock ./
 RUN yarn install --frozen-lockfile
 
@@ -38,7 +38,7 @@ COPY --from=builder /app/next.config.js ./
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/package.json ./package.json
 
-# COPY --from=builder ./app/prisma ./prisma
+COPY --from=builder ./app/prisma ./prisma
 
 # Automatically leverage output traces to reduce image size
 # https://nextjs.org/docs/advanced-features/output-file-tracing
@@ -48,10 +48,10 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/uploads ./uploads
 COPY --from=builder --chown=nextjs:nodejs /app/src/embeddings ./src/embeddings
 
-# COPY --chown=nextjs:nodejs ./compose/production/frontend/start-prisma-studio /start-prisma-studio
+COPY --chown=nextjs:nodejs ./compose/production/frontend/start-prisma-studio /start-prisma-studio
 
-# RUN sed -i 's/\r$//g' /start-prisma-studio
-# RUN chmod +x /start-prisma-studio
+RUN sed -i 's/\r$//g' /start-prisma-studio
+RUN chmod +x /start-prisma-studio
 
 USER nextjs
 
