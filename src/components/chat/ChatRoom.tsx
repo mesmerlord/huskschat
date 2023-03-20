@@ -188,11 +188,11 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
         (total, room) => total + room.tokensUsed,
         0
       );
-      if (totalTokensUsed >= 10000 && !session?.user) {
+      if (totalTokensUsed >= 5000 && !session?.user) {
         showNotification({
           title: "Error",
           message:
-            "You have reached your free limit of 10000 tokens, please login to continue or input your own API key",
+            "You have reached your free limit of 5000 tokens, please login to continue or input your own API key",
           color: "red",
           icon: <ActionIcon color="red" />,
         });
