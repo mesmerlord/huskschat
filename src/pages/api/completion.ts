@@ -24,7 +24,6 @@ export default async function openaiHandler(
           messages: messages,
         })
         .then(async ({ data }) => {
-          console.log(data);
           const newMessages = {
             createMany: {
               data: [
@@ -37,7 +36,7 @@ export default async function openaiHandler(
             },
           };
 
-          if (session && session?.user?.email && roomId) {
+          if (roomId) {
             const room = await db.room.findFirst({
               where: {
                 externalId: roomId,
@@ -50,17 +49,19 @@ export default async function openaiHandler(
                   externalId: roomId,
                   name: roomId,
                   messages: newMessages,
-                  userId: await db.user
-                    .findUnique({
-                      where: {
-                        email: session?.user?.email,
-                      },
-                    })
-                    .then((user) => user?.id),
+                  userId: session?.user?.email
+                    ? await db.user
+                        .findUnique({
+                          where: {
+                            email: session?.user?.email,
+                          },
+                        })
+                        .then((user) => user?.id)
+                    : null,
                 },
               });
             }
-            if (session?.user && room) {
+            if (room) {
               await db.message.createMany({
                 data: [
                   {

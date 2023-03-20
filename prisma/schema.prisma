@@ -61,14 +61,14 @@ model User {
 }
 
 model Room {
-  id        String    @id @default(cuid())
-  externalId String   @map("external_id") @unique
-  name      String
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  userId    String
-  User      User?     @relation(fields: [userId], references: [id])
-  messages  Message[]
+  id         String    @id @default(cuid())
+  externalId String    @unique @map("external_id")
+  name       String
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  userId     String?
+  User       User?     @relation(fields: [userId], references: [id])
+  messages   Message[]
 
   @@map("rooms")
 }
@@ -81,7 +81,6 @@ model Message {
   role      String
   roomId    String
   Room      Room?    @relation(fields: [roomId], references: [id])
-
 
   @@map("messages")
 }
