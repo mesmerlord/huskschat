@@ -18,6 +18,8 @@ import {
   Text,
   useMantineTheme,
   Drawer,
+  Group,
+  Button,
 } from "@mantine/core";
 import PreviousChats from "../chat/PreviousChats";
 import DarkModeSwitch from "../common/DarkModeSwitch";
@@ -25,6 +27,7 @@ import ChangeApiButton from "../common/ChangeApiButton";
 import TokenUsed from "../common/TokenUsed";
 import { useDebouncedState, useDisclosure } from "@mantine/hooks";
 import TopSectionChat from "../chat/TopSectionChat";
+import { useSession, signOut } from "next-auth/react";
 
 interface LayoutProps {
   component: any;
@@ -37,6 +40,7 @@ const Layout = ({ component, children }: LayoutProps) => {
   const tagLine = "Husks: Own your conversations with ChatGPT";
   const router = useRouter();
   //   const analytics = useAnalytics({ pathname: router.pathname });
+  const { data: session, status } = useSession();
 
   const [state, setState] = useState({
     isRouteChanging: false,
@@ -114,7 +118,19 @@ const Layout = ({ component, children }: LayoutProps) => {
               <Navbar.Section>
                 <Stack>
                   <ChangeApiButton />
-                  <DarkModeSwitch />
+                  <Group grow>
+                    <DarkModeSwitch />
+                    {session && (
+                      <Button onClick={() => signOut()}>
+                        <Text> Logout</Text>
+                      </Button>
+                    )}
+                    {!session && (
+                      <Button onClick={() => router.push("/login")}>
+                        <Text>Login</Text>
+                      </Button>
+                    )}
+                  </Group>
                 </Stack>
               </Navbar.Section>
             </Navbar>
@@ -176,7 +192,19 @@ const Layout = ({ component, children }: LayoutProps) => {
               </Box>
               <Stack>
                 <ChangeApiButton />
-                <DarkModeSwitch />
+                <Group grow>
+                  <DarkModeSwitch />
+                  {session && (
+                    <Button onClick={() => signOut()}>
+                      <Text> Logout</Text>
+                    </Button>
+                  )}
+                  {!session && (
+                    <Button onClick={() => router.push("/login")}>
+                      <Text>Login</Text>
+                    </Button>
+                  )}
+                </Group>
               </Stack>
             </Stack>
           </Drawer>

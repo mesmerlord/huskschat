@@ -28,13 +28,14 @@ import Dropfile from "../common/DropFile";
 import { getPrompt } from "../lib/open-ai-prompts";
 import DocumentChatMessage from "./DocumentChatMessage";
 import { signOut, useSession } from "next-auth/react";
-
+import { useRouter } from "next/router";
 interface ChatRoomProps {
   roomId: string;
 }
 
 const ChatRoom = ({ roomId }: ChatRoomProps) => {
   const { data: session } = useSession();
+  const router = useRouter();
 
   const dummy = useRef<HTMLDivElement>(null);
   const [message, setMessage] = useState("");
@@ -182,16 +183,23 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
       return;
     }
 
-    // if (!apiKey && userPlan === "free") {
-    //   const totalTokensUsed = messageRoomList.reduce(
-    //     (total, room) => total + room.tokensUsed,
-    //     0
-    //   );
-    //   if (totalTokensUsed >= 1000) {
-    //     setApiKeyModal(true);
-    //     return;
-    //   }
-    // }
+    if (!apiKey && userPlan === "free") {
+      const totalTokensUsed = messageRoomList.reduce(
+        (total, room) => total + room.tokensUsed,
+        0
+      );
+      if (totalTokensUsed >= 10000 && !session?.user) {
+        showNotification({
+          title: "Error",
+          message:
+            "You have reached your free limit of 10000 tokens, please login to continue or input your own API key",
+          color: "red",
+          icon: <ActionIcon color="red" />,
+        });
+        router.push("/login");
+        return;
+      }
+    }
 
     const userPrompt = getPrompt({ type: "user", message });
     if (!roomId || !room?.messages) {
