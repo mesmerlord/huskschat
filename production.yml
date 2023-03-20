@@ -15,8 +15,6 @@ services:
       - production_postgres_data_backups:/backups
     env_file:
       - .env.production
-    ports:
-      - "5433:5432"
 
   husks_frontend: &husks_frontend
     image: husks_production_frontend
