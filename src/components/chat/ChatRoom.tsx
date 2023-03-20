@@ -27,12 +27,15 @@ import { FeaturesTitle } from "../common/Features";
 import Dropfile from "../common/DropFile";
 import { getPrompt } from "../lib/open-ai-prompts";
 import DocumentChatMessage from "./DocumentChatMessage";
+import { signOut, useSession } from "next-auth/react";
 
 interface ChatRoomProps {
   roomId: string;
 }
 
 const ChatRoom = ({ roomId }: ChatRoomProps) => {
+  const { data: session } = useSession();
+
   const dummy = useRef<HTMLDivElement>(null);
   const [message, setMessage] = useState("");
 
@@ -72,14 +75,16 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
   const switchResponseForPlan = async (
     plan: string,
     messages: ChatMessageType[],
-    type: "completion" | "documentCompletion" = "completion"
+    type: "completion" | "documentCompletion" = "completion",
+    roomId: string
   ) => {
     switch (plan) {
       case "free":
         if (room?.documentId && type === "documentCompletion") {
           const completion = await getServerDocumentCompletion(
             messages,
-            room?.documentId
+            room?.documentId,
+            roomId
           ).then((res) => {
             if (res?.status === 200) {
               setOpenAiLoading(false);
@@ -105,7 +110,7 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
           });
           return completion;
         }
-        const freeCompletion = await getServerCompletion(messages)
+        const freeCompletion = await getServerCompletion(messages, roomId)
           .then((res) => {
             if (res?.status === 200) {
               setOpenAiLoading(false);
@@ -176,6 +181,18 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
       setApiKeyModal(true);
       return;
     }
+
+    // if (!apiKey && userPlan === "free") {
+    //   const totalTokensUsed = messageRoomList.reduce(
+    //     (total, room) => total + room.tokensUsed,
+    //     0
+    //   );
+    //   if (totalTokensUsed >= 1000) {
+    //     setApiKeyModal(true);
+    //     return;
+    //   }
+    // }
+
     const userPrompt = getPrompt({ type: "user", message });
     if (!roomId || !room?.messages) {
       const newRoomId = crypto.randomUUID();
@@ -186,7 +203,8 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
       const completion = await switchResponseForPlan(
         userPlan,
         [systemPrompt, userPrompt],
-        "documentCompletion"
+        "documentCompletion",
+        newRoomId
       );
 
       const newMessage = completion?.data?.choices[0]?.message;
@@ -220,7 +238,8 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
         const titleCompletion = await switchResponseForPlan(
           userPlan,
           [systemPrompt, userPrompt, newTitlePrompt],
-          "completion"
+          "completion",
+          newRoomId
         );
         const newTitleMessage = titleCompletion?.data?.choices[0]?.message;
         if (
@@ -257,7 +276,8 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
             const summaryCompletion = await switchResponseForPlan(
               userPlan,
               [...newRoomMessages, summaryPrompt],
-              "documentCompletion"
+              "documentCompletion",
+              room?.id
             );
             if (
               summaryCompletion &&
@@ -286,7 +306,8 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
           const summaryCompletion = await switchResponseForPlan(
             userPlan,
             [...newRoomMessages, summaryPrompt],
-            "documentCompletion"
+            "documentCompletion",
+            room?.id
           );
           if (
             summaryCompletion &&
@@ -316,7 +337,8 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
       const completion = await switchResponseForPlan(
         userPlan,
         [...newRoomMessages, userPrompt],
-        "documentCompletion"
+        "documentCompletion",
+        room?.id
       );
 
       setOpenAiLoading(false);
@@ -357,7 +379,8 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
     const completion = await switchResponseForPlan(
       userPlan,
       [...previousMessages],
-      "documentCompletion"
+      "documentCompletion",
+      room?.id
     );
     setOpenAiReloading(false);
 

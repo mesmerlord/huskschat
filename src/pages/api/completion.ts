@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
+import { getSession } from "next-auth/react";
 import { Configuration, OpenAIApi } from "openai";
-
+import db from "@/components/core/db";
 export default async function openaiHandler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -8,6 +9,9 @@ export default async function openaiHandler(
   if (req.method === "POST") {
     const messages = req.body.messages;
     const apiKey = process.env.OPENAI_API_KEY;
+    const roomId = req?.body?.roomId;
+
+    const session = await getSession({ req });
 
     try {
       const configuration = new Configuration({
@@ -19,7 +23,60 @@ export default async function openaiHandler(
           model: "gpt-3.5-turbo-0301",
           messages: messages,
         })
-        .then(({ data }) => {
+        .then(async ({ data }) => {
+          console.log(data);
+          const newMessages = {
+            createMany: {
+              data: [
+                { text: messages?.slice(-1)[0]?.content, role: "user" },
+                {
+                  text: data?.choices[0]?.message?.content,
+                  role: "assistant",
+                },
+              ],
+            },
+          };
+
+          if (session && session?.user?.email && roomId) {
+            const room = await db.room.findFirst({
+              where: {
+                externalId: roomId,
+              },
+            });
+
+            if (!room) {
+              const newRoom = await db.room.create({
+                data: {
+                  externalId: roomId,
+                  name: roomId,
+                  messages: newMessages,
+                  userId: await db.user
+                    .findUnique({
+                      where: {
+                        email: session?.user?.email,
+                      },
+                    })
+                    .then((user) => user?.id),
+                },
+              });
+            }
+            if (session?.user && room) {
+              await db.message.createMany({
+                data: [
+                  {
+                    text: messages?.slice(-1)[0]?.content,
+                    role: "user",
+                    roomId: room?.id,
+                  },
+                  {
+                    text: data?.choices[0]?.message?.content,
+                    role: "assistant",
+                    roomId: room?.id,
+                  },
+                ],
+              });
+            }
+          }
           res.status(200).json({ data });
         })
         .catch((err) => {

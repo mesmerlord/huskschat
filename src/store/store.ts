@@ -101,7 +101,10 @@ export const getOpenAiCompletion = async (
   return completion;
 };
 
-export const getServerCompletion = async (messages: ChatMessageType[]) => {
+export const getServerCompletion = async (
+  messages: ChatMessageType[],
+  roomId
+) => {
   const newMessages = messages?.map((msg) => {
     if (Boolean(msg?.content)) {
       return {
@@ -118,6 +121,7 @@ export const getServerCompletion = async (messages: ChatMessageType[]) => {
     },
     body: JSON.stringify({
       messages: newMessages,
+      roomId,
     }),
   })
     .then((res) => res)
@@ -130,7 +134,8 @@ export const getServerCompletion = async (messages: ChatMessageType[]) => {
 
 export const getServerDocumentCompletion = async (
   messages: ChatMessageType[],
-  documentId
+  documentId,
+  roomId
 ) => {
   const newMessages = messages?.map((msg) => {
     if (Boolean(msg?.content)) {
@@ -149,6 +154,7 @@ export const getServerDocumentCompletion = async (
     body: JSON.stringify({
       messages: newMessages,
       documentId: documentId,
+      roomId,
     }),
   })
     .then((res) => res)

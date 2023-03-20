@@ -1,0 +1,23 @@
+version: "3.4"
+
+services:
+  postgres:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: husks
+      POSTGRES_PASSWORD: husks
+      POSTGRES_DB: husks
+    ports:
+      - 5432:5432
+    volumes:
+      - local_postgres_data:/var/lib/postgresql/data:Z
+
+  maildev:
+    image: djfarrelly/maildev
+    ports:
+      - "1080:80"
+      - "25:25"
+volumes:
+  # postgresql:
+  local_postgres_data:

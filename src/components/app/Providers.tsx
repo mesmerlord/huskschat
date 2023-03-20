@@ -1,5 +1,6 @@
 import { Provider, useCreateStore } from "@/store/store";
 import { MantineProvider, createEmotionCache } from "@mantine/core";
+import { SessionProvider } from "next-auth/react";
 import { useState } from "react";
 import { Hydrate, QueryClient, QueryClientProvider } from "react-query";
 
@@ -13,13 +14,15 @@ const Providers = ({ children, pageProps }) => {
     <Provider createStore={createStore}>
       <QueryClientProvider client={queryClient}>
         <Hydrate state={pageProps?.dehydratedState}>
-          <MantineProvider
-            emotionCache={myCache}
-            withGlobalStyles
-            withNormalizeCSS
-          >
-            {children}
-          </MantineProvider>
+          <SessionProvider session={pageProps?.session}>
+            <MantineProvider
+              emotionCache={myCache}
+              withGlobalStyles
+              withNormalizeCSS
+            >
+              {children}
+            </MantineProvider>
+          </SessionProvider>
         </Hydrate>
       </QueryClientProvider>
     </Provider>
