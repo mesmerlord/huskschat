@@ -11,7 +11,7 @@ RUN apk add --update --no-cache \
         g++
 
 WORKDIR /app
-COPY ./frontend/prisma ./prisma
+COPY ./prisma ./prisma
 COPY ./package.json ./yarn.lock ./
 RUN yarn install --frozen-lockfile
 
