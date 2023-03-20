@@ -48,7 +48,7 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/uploads ./uploads
 COPY --from=builder --chown=nextjs:nodejs /app/src/embeddings ./src/embeddings
 
-COPY --chown=nextjs:nodejs ./compose/production/frontend/start-prisma-studio /start-prisma-studio
+COPY --chown=nextjs:nodejs ./compose/frontend/start-prisma-studio /start-prisma-studio
 
 RUN sed -i 's/\r$//g' /start-prisma-studio
 RUN chmod +x /start-prisma-studio
