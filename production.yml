@@ -18,13 +18,6 @@ services:
     ports:
       - "5433:5432"
 
-  urpics_prisma_studio:
-    <<: *urpics_frontend
-    image: urpics_prisma_studio
-    command: sh -c "npx --yes prisma studio --port 5555 --schema=./prisma/schema.prisma"
-    ports:
-      - "5555:5555"
-
   husks_frontend: &husks_frontend
     image: husks_production_frontend
     build:
@@ -36,6 +29,13 @@ services:
     restart: on-failure
     env_file:
       - .env
+
+  husks_prisma_studio:
+    <<: *husks_frontend
+    image: urpics_prisma_studio
+    command: sh -c "npx --yes prisma studio --port 5555 --schema=./prisma/schema.prisma"
+    ports:
+      - "5556:5555"
 
     networks:
       - traefik_proxy
