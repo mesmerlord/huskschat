@@ -1,3 +1,4 @@
+import { useStore } from "@/store/store";
 import {
   ActionIcon,
   Box,
@@ -6,6 +7,7 @@ import {
   Container,
   Flex,
   Grid,
+  Select,
   Textarea,
 } from "@mantine/core";
 import { IconBookUpload, IconSend } from "@tabler/icons-react";
@@ -25,6 +27,8 @@ const ChatBox = ({
   setShowDropBox,
   showUploadButton,
 }: ChatBoxProps) => {
+  const modelName = useStore((state) => state.modelName);
+  const setModelName = useStore((state) => state.setModelName);
   return (
     <form
       onSubmit={(e) => {
@@ -55,17 +59,18 @@ const ChatBox = ({
             </Col>
             <Col span={3}>
               <Flex justify="center" align="flex-start" sx={{ height: "100%" }}>
-                <Button
-                  type="submit"
-                  leftIcon={
-                    <ActionIcon variant="transparent" size="sm">
-                      <IconSend color="white" />
-                    </ActionIcon>
-                  }
-                  sx={{ marginRight: "0.5rem" }}
-                >
-                  Send
-                </Button>{" "}
+                <Select
+                  data={[
+                    { label: "GPT-3 Turbo", value: "gpt-3.5-turbo-0301" },
+                    { label: "ChatGLM", value: "chatglm" },
+                  ]}
+                  size="sm"
+                  px={5}
+                  value={modelName}
+                  onChange={(value) => {
+                    setModelName(value);
+                  }}
+                />
                 {showUploadButton && (
                   <Button
                     onClick={() => setShowDropBox((value) => !value)}
@@ -78,6 +83,17 @@ const ChatBox = ({
                     Upload
                   </Button>
                 )}
+                <Button
+                  type="submit"
+                  leftIcon={
+                    <ActionIcon variant="transparent" size="sm">
+                      <IconSend color="white" />
+                    </ActionIcon>
+                  }
+                  sx={{ marginLeft: "0.5rem" }}
+                >
+                  Send
+                </Button>{" "}
               </Flex>
             </Col>
           </Grid>

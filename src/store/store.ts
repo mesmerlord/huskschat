@@ -62,6 +62,7 @@ export type storeState = {
   messageRoomList: ChatRoomType[];
   currentRoom: string | null;
   documentId: string | null;
+  modelName: string;
 };
 
 const getDefaultInitialState: storeState = () => ({
@@ -72,6 +73,7 @@ const getDefaultInitialState: storeState = () => ({
   messageRoomList: [],
   currentRoomId: null,
   userPlan: "not_set",
+  modelName: "gpt-3.5-turbo-0301",
 });
 const zustandContext: any = createContext();
 export const Provider = zustandContext.Provider;
@@ -103,7 +105,8 @@ export const getOpenAiCompletion = async (
 
 export const getServerCompletion = async (
   messages: ChatMessageType[],
-  roomId
+  roomId,
+  modelName
 ) => {
   const newMessages = messages?.map((msg) => {
     if (Boolean(msg?.content)) {
@@ -113,7 +116,7 @@ export const getServerCompletion = async (
       };
     }
   });
-
+  console.log(modelName);
   const response = await fetch("/api/completion", {
     method: "POST",
     headers: {
@@ -122,6 +125,7 @@ export const getServerCompletion = async (
     body: JSON.stringify({
       messages: newMessages,
       roomId,
+      modelName: modelName,
     }),
   })
     .then((res) => res)
@@ -186,6 +190,7 @@ export const initializeStore = (preloadedState = {}) => {
         },
         setApiKey: (apiKey) => set(() => ({ apiKey })),
         setUserPlan: (userPlan) => set(() => ({ userPlan })),
+        setModelName: (modelName) => set(() => ({ modelName })),
 
         deleteRoom: (roomId) => {
           set(

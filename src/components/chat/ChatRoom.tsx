@@ -45,6 +45,7 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
   const [apiKeyModal, setApiKeyModal] = useState(false);
   const [showDropBox, setShowDropBox] = useState(false);
   const [showUploadButton, setShowUploadButton] = useState(true);
+  const [modelName, setModelName] = useState("chatglm");
 
   const messageRoomList = useStore((state) => state.messageRoomList);
   const addRoomMessage = useStore((state) => state.addRoomMessage);
@@ -111,7 +112,11 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
           });
           return completion;
         }
-        const freeCompletion = await getServerCompletion(messages, roomId)
+        const freeCompletion = await getServerCompletion(
+          messages,
+          roomId,
+          modelName
+        )
           .then((res) => {
             if (res?.status === 200) {
               setOpenAiLoading(false);
