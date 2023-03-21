@@ -45,7 +45,6 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
   const [apiKeyModal, setApiKeyModal] = useState(false);
   const [showDropBox, setShowDropBox] = useState(false);
   const [showUploadButton, setShowUploadButton] = useState(true);
-  const [modelName, setModelName] = useState("chatglm");
 
   const messageRoomList = useStore((state) => state.messageRoomList);
   const addRoomMessage = useStore((state) => state.addRoomMessage);
@@ -54,6 +53,7 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
   const setRoomName = useStore((state) => state.setRoomName);
   const apiKey = useStore((state) => state.apiKey);
   const userPlan = useStore((state) => state.userPlan);
+  const modelName = useStore((state) => state.modelName);
 
   const [room, setRoom] = useState<ChatRoomType>(
     messageRoomList?.find((storeRoom) => storeRoom.id === roomId) || {
