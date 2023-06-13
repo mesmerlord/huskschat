@@ -54,7 +54,9 @@ http:
       #   certResolver: letsencrypt
 
     web-secure-styleqr-frontend:
-      rule: "Host(`aieasypic.com`) || Host(`www.aieasypic.com`)"
+      # rule: "Host(`aieasypic.com`) || Host(`www.aieasypic.com`)"
+      rule: "Path(`/`)"
+
       entryPoints:
         - web
       middlewares:
