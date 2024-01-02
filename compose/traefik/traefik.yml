@@ -53,6 +53,18 @@ http:
       #   # https://docs.traefik.io/master/routing/routers/#certresolver
       #   certResolver: letsencrypt
 
+    web-secure-husks-frontend:
+    #also has "resize in url"
+      rule: "Host(`husks.org`) || Host(`www.husks.org`) && PathPrefix(`/resize`)"
+      entryPoints:
+        - web
+      middlewares:
+        - test-compress
+      service: imaginary
+      # tls:
+      #   # https://docs.traefik.io/master/routing/routers/#certresolver
+      #   certResolver: letsencrypt
+
     web-secure-styleqr-frontend:
       rule: "Host(`aieasypic.com`) || Host(`www.aieasypic.com`)"
       entryPoints:
@@ -90,6 +102,11 @@ http:
       loadBalancer:
         servers:
           - url: http://styleqr_frontend:3000
+
+    imaginary:
+      loadBalancer:
+        servers:
+          - url: http://imaginary:9000
 
 providers:
   # https://docs.traefik.io/master/providers/file/

@@ -3,6 +3,7 @@ version: "3"
 volumes:
   production_postgres_data: {}
   production_postgres_data_backups: {}
+  images: {}
 
 services:
   husks_postgres:
@@ -42,6 +43,15 @@ services:
     networks:
       - default
       - traefik_proxy
+
+  imaginary:
+    image: h2non/imaginary:latest
+    # optionally mount a volume as local image source
+    volumes:
+      - images:/mnt/data
+    environment:
+      PORT: 9000
+    command: -enable-url-source -mount /mnt/data -cors -gzip
 
 networks:
   traefik_proxy:
