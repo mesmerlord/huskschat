@@ -1,9 +1,9 @@
 log:
   level: DEBUG
 
-api:
-  dashboard: true
-  insecure: true
+# api:
+#   dashboard: true
+#   insecure: true
 
 entryPoints:
   web:
@@ -33,11 +33,11 @@ entryPoints:
 
 http:
   routers:
-    dashboard:
-      rule: "Host(`traefik.husks.org`)"
-      service: api@internal
-      entryPoints:
-        - web
+    # dashboard:
+    #   rule: "Host(`traefik.husks.org`)"
+    #   service: api@internal
+    #   entryPoints:
+    #     - web
     web-secure-urpics-frontend:
       rule: "Host(`urpics.art`) || Host(`www.urpics.art`)"
       entryPoints:
