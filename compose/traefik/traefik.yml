@@ -104,7 +104,7 @@ http:
     imaginary:
       loadBalancer:
         servers:
-          - url: http://imaginary:9000
+          - url: http://imaginary:3001
 
 providers:
   # https://docs.traefik.io/master/providers/file/
