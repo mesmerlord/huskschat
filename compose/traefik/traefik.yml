@@ -42,7 +42,7 @@ http:
       #   certResolver: letsencrypt
 
     web-secure-img-resize-frontend:
-      rule: "Host(`husks.org`) || Host(`www.husks.org`) || PathPrefix(`/resize`)"
+      rule: "Host(`cdn.husks.org`) || Host(`www.cdn.husks.org`)"
       entryPoints:
         - web
       middlewares:
