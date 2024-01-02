@@ -50,7 +50,7 @@ services:
     environment:
       - PORT=3001
 
-    command: -enable-url-source -mount /mnt/data -cors -gzip
+    command: -enable-url-source -mount /mnt/data -cors -gzip --http-cache-ttl 604800
     networks:
       - default
       - traefik_proxy
