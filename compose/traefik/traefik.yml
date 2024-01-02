@@ -41,6 +41,17 @@ http:
       #   # https://docs.traefik.io/master/routing/routers/#certresolver
       #   certResolver: letsencrypt
 
+    web-secure-img-resize-frontend:
+      rule: "Host(`husks.org`) || Host(`www.husks.org`) && PathPrefix(`/resize`)"
+      entryPoints:
+        - web
+      middlewares:
+        - test-compress
+      service: imaginary
+      # tls:
+      #   # https://docs.traefik.io/master/routing/routers/#certresolver
+      #   certResolver: letsencrypt
+
     web-secure-husks-frontend:
       rule: "Host(`husks.org`) || Host(`www.husks.org`)"
       entryPoints:
@@ -49,17 +60,6 @@ http:
         - csrf
         - test-compress
       service: husks_frontend
-      # tls:
-      #   # https://docs.traefik.io/master/routing/routers/#certresolver
-      #   certResolver: letsencrypt
-
-    web-secure-img-resize-frontend:
-      rule: "Host(`husks.org`) || Host(`www.husks.org`) && PathPrefix(`/resize`)"
-      entryPoints:
-        - web
-      middlewares:
-        - test-compress
-      service: imaginary
       # tls:
       #   # https://docs.traefik.io/master/routing/routers/#certresolver
       #   certResolver: letsencrypt
