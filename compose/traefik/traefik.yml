@@ -53,8 +53,7 @@ http:
       #   # https://docs.traefik.io/master/routing/routers/#certresolver
       #   certResolver: letsencrypt
 
-    web-secure-husks-frontend:
-    #also has "resize in url"
+    web-secure-img-resize-frontend:
       rule: "Host(`husks.org`) || Host(`www.husks.org`) && PathPrefix(`/resize`)"
       entryPoints:
         - web
