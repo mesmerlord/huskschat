@@ -50,8 +50,8 @@ services:
     volumes:
       - images:/mnt/data
     environment:
-      PORT: 9000
-      DEBUG: *
+      - PORT: 9000
+      - DEBUG: "*"
     command: -enable-url-source -mount /mnt/data -cors -gzip
 
 networks:
