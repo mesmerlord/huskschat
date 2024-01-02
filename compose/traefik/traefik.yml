@@ -42,7 +42,7 @@ http:
       #   certResolver: letsencrypt
 
     web-secure-img-resize-frontend:
-      rule: "Host(`cdna.husks.org`) "
+      rule: "Host(`cdnimg.aieasypic.com`)"
       entryPoints:
         - web
 
