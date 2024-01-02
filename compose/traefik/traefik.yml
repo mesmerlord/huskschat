@@ -42,7 +42,7 @@ http:
       #   certResolver: letsencrypt
 
     web-secure-img-resize-frontend:
-      rule: "PathPrefix(`/resize`)"
+      rule: "Host(`cdn.husks.org`) || Host(`www.cdn.husks.org`)"
       entryPoints:
         - web
       middlewares:
@@ -53,7 +53,7 @@ http:
       #   certResolver: letsencrypt
 
     web-secure-husks-frontend:
-      rule: "Host(`husks.org`) || Host(`www.husks.org`) || !PathPrefix(`/resize`)"
+      rule: "Host(`husks.org`) || Host(`www.husks.org`)"
       entryPoints:
         - web
       middlewares:
@@ -105,7 +105,7 @@ http:
     imaginary:
       loadBalancer:
         servers:
-          - url: http://imaginary:9000/
+          - url: http://imaginary:9000
 
 providers:
   # https://docs.traefik.io/master/providers/file/

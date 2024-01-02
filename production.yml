@@ -51,7 +51,9 @@ services:
       - PORT=9000
       - DEBUG=*
     command: -enable-url-source -mount /mnt/data -cors -gzip
-
+    networks:
+      - default
+      - traefik_proxy
 networks:
   traefik_proxy:
     external: true
