@@ -1,6 +1,9 @@
 log:
   level: INFO
 
+api:
+  dashboard: true
+
 entryPoints:
   web:
     # http
@@ -29,6 +32,11 @@ entryPoints:
 
 http:
   routers:
+    dashboard:
+      rule: "Host(`traefik.husks.org`)"
+      service: api@internal
+      entryPoints:
+        - web
     web-secure-urpics-frontend:
       rule: "Host(`urpics.art`) || Host(`www.urpics.art`)"
       entryPoints:
