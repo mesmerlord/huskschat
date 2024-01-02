@@ -42,11 +42,10 @@ http:
       #   certResolver: letsencrypt
 
     web-secure-img-resize-frontend:
-      rule: "Host(`cdna.husks.org`) || Host(`wwwa.cdna.husks.org`)"
+      rule: "Host(`cdna.husks.org`) "
       entryPoints:
         - web
-      middlewares:
-        - test-compress
+
       service: imaginary
       # tls:
       #   # https://docs.traefik.io/master/routing/routers/#certresolver
