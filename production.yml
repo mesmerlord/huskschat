@@ -43,14 +43,14 @@ services:
     networks:
       - default
       - traefik_proxy
-    imaginary:
-      image: h2non/imaginary:latest
-      volumes:
-        - images:/mnt/data
-      environment:
-        - PORT=9000
-        - DEBUG=*
-      command: -enable-url-source -mount /mnt/data -cors -gzip
+  imaginary:
+    image: h2non/imaginary:latest
+    volumes:
+      - images:/mnt/data
+    environment:
+      - PORT=9000
+      - DEBUG=*
+    command: -enable-url-source -mount /mnt/data -cors -gzip
 
 networks:
   traefik_proxy:
