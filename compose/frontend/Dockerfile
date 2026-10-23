@@ -1,5 +1,5 @@
 # Install dependencies only when needed
-FROM --platform=linux/amd64 node:16-alpine3.16 AS deps
+FROM --platform=linux/amd64 node:24-alpine AS deps
 # Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
 RUN apk add --no-cache libc6-compat
 RUN apk add --update --no-cache \
@@ -8,14 +8,15 @@ RUN apk add --update --no-cache \
         libffi-dev \
         python3 \
         make \
-        g++
+        g++ \
+        openssl
 
 WORKDIR /app
 COPY ./prisma ./prisma
 COPY ./package.json ./yarn.lock ./
 RUN yarn install --frozen-lockfile
 
-FROM --platform=linux/amd64 node:16-alpine3.16 AS builder
+FROM --platform=linux/amd64 node:24-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
@@ -25,8 +26,11 @@ ENV NEXT_TELEMETRY_DISABLED 1
 RUN yarn build
 
 # Production image, copy all the files and run next
-FROM --platform=linux/amd64 node:16-alpine3.16 AS runner
+FROM --platform=linux/amd64 node:24-alpine AS runner
 WORKDIR /app
+
+# Prisma 4.x needs the openssl binary to detect OpenSSL 3 on newer Alpine
+RUN apk add --no-cache openssl
 
 ENV NODE_ENV production
 ENV NEXT_TELEMETRY_DISABLED 1
